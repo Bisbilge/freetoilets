@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure-amvbwkir6yf=9vv9x2h50xq)8*#feqwia45+x1p+u3fxwtz%2u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'freetoilets.vercel.app', 
+    'freetoilets.org', 
+    'www.freetoilets.org',
+    'localhost', 
+    '127.0.0.1',
+    '.vercel.app' 
+]
 
 
 # Application definition
