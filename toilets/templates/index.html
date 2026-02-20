@@ -3,20 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeToilet.com | Ücretsiz Tuvalet Bul</title>
+    <title>FreeToilet.org | Ücretsiz Tuvalet Bul</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #map { height: 100vh; width: 100%; }
-        .info-box { padding: 10px; }
+        .info-box { padding: 10px; min-width: 150px; }
         .price-tag { color: #e74c3c; font-weight: bold; }
         .free-tag { color: #27ae60; font-weight: bold; }
+        
+        /* Tuvalet Bildir Butonu Stili */
+        #report-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #2ecc71;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #report-btn:hover {
+            background-color: #27ae60;
+            transform: scale(1.05);
+        }
+
+        /* Mobil uyumluluk için küçük dokunuş */
+        @media (max-width: 600px) {
+            #report-btn {
+                bottom: 20px;
+                right: 10px;
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div id="map"></div>
+
+<a id="report-btn" href="mailto:info@freetoilets.org?subject=Yeni Tuvalet Bildirimi&body=Merhaba,%0A%0AYeni bir ücretsiz tuvalet bildirmek istiyorum:%0A%0AMekan Adı:%0AKoordinatlar/Konum:%0AŞifre veya Notlar:%0A%0ATeşekkürler!">
+    <span>📍</span> Tuvalet Bildir
+</a>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -40,10 +78,10 @@
 
                 var popupContent = `
                     <div class="info-box">
-                        <h3>${toilet.name}</h3>
-                        <p>${status}</p>
-                        <p><b>Şifre:</b> <code>${toilet.code}</code></p>
-                        <p>${toilet.desc}</p>
+                        <h3 style="margin:0 0 10px 0;">${toilet.name}</h3>
+                        <p style="margin:5px 0;">${status}</p>
+                        <p style="margin:5px 0;"><b>Şifre:</b> <code>${toilet.code || 'Yok'}</code></p>
+                        <p style="margin:5px 0; font-size: 0.9em; color: #555;">${toilet.desc || ''}</p>
                     </div>
                 `;
 
@@ -53,8 +91,15 @@
         })
         .catch(err => console.error("Veri yüklenemedi:", err));
 
-    // Kullanıcının anlık konumunu bulma (Opsiyonel)
+    // Kullanıcının anlık konumunu bulma
     map.locate({setView: true, maxZoom: 16});
+
+    // Konum bulunduğunda mavi bir nokta ekle
+    function onLocationFound(e) {
+        var radius = e.accuracy / 2;
+        L.circle(e.latlng, radius).addTo(map).bindPopup("Şu an buradasınız").openPopup();
+    }
+    map.on('locationfound', onLocationFound);
 </script>
 
 </body>
