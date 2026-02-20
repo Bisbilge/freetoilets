@@ -1,13 +1,20 @@
+import logging
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib import messages
 from .models import Toilet
-from .forms import ToiletReportForm # forms.py'den formu çekiyoruz
+from .forms import ToiletReportForm
+
+# Hataları loglamak için
+logger = logging.getLogger(__name__)
+
 def index(request):
     return render(request, 'index.html')
 
 def toilet_data(request):
+    """Harita için tuvalet verilerini JSON olarak döndürür."""
     toilets = Toilet.objects.all()
     data = []
     
@@ -26,16 +33,19 @@ def toilet_data(request):
 
 def report_toilet(request):
     """
-    Kullanıcıdan gelen tuvalet bildirimlerini 
-    form aracılığıyla alıp mail gönderen view.
+    Kullanıcıdan gelen bildirimleri alır, veritabanına kaydeder
+    ve Gmail kotası elverirse mail gönderir.
     """
     if request.method == 'POST':
         form = ToiletReportForm(request.POST)
         if form.is_valid():
-            # Temizlenmiş verileri al
+            # 1. Veriyi veritabanına kaydet (Mail gitmese bile veri kaybolmasın)
+            # Eğer formun bir ModelForm ise:
+            # report = form.save()
+            
             cd = form.cleaned_data
             
-            # Mail içeriğini oluştur
+            # 2. Mail içeriğini hazırla
             subject = f"Yeni Tuvalet Bildirimi: {cd['place_name']}"
             message = f"""
             Yeni bir tuvalet bildirimi geldi:
@@ -44,58 +54,33 @@ def report_toilet(request):
             Konum/Koordinat: {cd['coordinates']}
             Ücretsiz mi: {'Evet' if cd['is_free'] else 'Hayır'}
             Ek Bilgiler: {cd['description']}
-            
-            Gönderim Tarihi: {settings.TIME_ZONE}
             """
             
-            # Maili gönder
-            # settings içindeki EMAIL_HOST_USER gönderici olarak kullanılır
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                ['bisbilge@gmail.com'], # Senin asıl mail adresin
-                fail_silently=False,
-            )
+            # 3. Mail göndermeyi dene (Gmail kotasını kontrol et)
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    ['bisbilge@gmail.com'], # Hedef mail adresin
+                    fail_silently=False,
+                )
+                messages.success(request, "Bildiriminiz başarıyla iletildi!")
+                
+            except Exception as e:
+                # Günlük limit dolduğunda (550 hatası) buraya düşer
+                logger.error(f"Gmail gönderim hatası: {e}")
+                
+                # Kullanıcıya nazikçe açıkla
+                messages.warning(request, (
+                    "Harika bir ilgi var! Günlük bildirim limitimize ulaştık. "
+                    "Daha sonra tekrar deneyiniz. "
+                    "Anlayışınız için teşekkür ederiz! 💙"
+                ))
             
-            # Mail sonrası kullanıcıyı bir başarı sayfasına yönlendir
+            # Başarılı (veya kotadan dolayı uyarılı) sayfaya yönlendir
             return render(request, 'success.html')
     else:
         form = ToiletReportForm()
     
     return render(request, 'report.html', {'form': form})
-    
-    def report_toilet(request):
-    if request.method == 'POST':
-        # --- BURADA VERİTABANI KAYIT İŞLEMİN OLMALI ---
-        # Örnek: form = ToiletReportForm(request.POST)
-        # if form.is_valid(): form.save()
-        
-        try:
-            # Gmail SMTP denemesi
-            send_mail(
-                'Yeni Tuvalet Bildirimi',
-                'Bir kullanıcı yeni bir konum bildirdi.',
-                'senin-mailin@gmail.com',
-                ['hedef-mail@gmail.com'],
-                fail_silently=False,
-            )
-            messages.success(request, "Bildiriminiz başarıyla iletildi!")
-            
-        except Exception as e:
-            # SMTPDataError (550) buraya düşecek. 
-            # Site ÇÖKMEYECEK, sadece bu blok çalışacak.
-            logger.error(f"Gmail Limiti Aşıldı: {e}")
-            
-            # Kullanıcıya durumu nazikçe açıkla
-            messages.warning(request, (
-                "Yoğun ilginiz için teşekkürler! Günlük bildirim limitimize ulaştık. "
-                "Veriniz güvenle kaydedildi ancak onay süreci yarına sarkabilir. "
-                "Anlayışınız için teşekkür ederiz."
-            ))
-
-        # Hata olsa da olmasa da kullanıcıyı başarı sayfasına yönlendir
-        return render(request, 'toilets/report_success.html')
-
-    # GET isteği için formu göster
-    return render(request, 'toilets/report_form.html')
