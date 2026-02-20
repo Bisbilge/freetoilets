@@ -32,35 +32,39 @@ def toilet_data(request):
     return JsonResponse(data, safe=False)
 
 def report_toilet(request):
-                if request.method == 'POST':
-                        form = ToiletReportForm(request.POST)
-                        if form.is_valid():
-                            # 1. Önce veriyi veritabanına kaydet (Mail gitmese de veri bizde kalsın)
-                            # form.save() 
-                            
-                            cd = form.cleaned_data
-                            subject = f"Yeni Tuvalet Bildirimi: {cd['place_name']}"
-                            message = f"Mekan: {cd['place_name']}\nKoordinat: {cd['coordinates']}"
-                            
-                            try:
-                                # Mail göndermeyi dene
-                                send_mail(
-                                    subject,
-                                    message,
-                                    settings.EMAIL_HOST_USER,
-                                    ['bisbilge@gmail.com'],
-                                    fail_silently=False,
-                                )
-                                # Mail başarıyla giderse bu mesaj görünecek
-                                messages.success(request, "Bildiriminiz başarıyla iletildi!")
-                                
-                            except Exception:
-                                # Gmail kotası dolduğunda (Daily limit exceeded) buraya düşer
-                                # Kullanıcıya hata sayfası yerine bu uyarıyı gösteriyoruz
-                                messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci yarına sarkabilir. Özür dileriz!")
-                            
-                            return render(request, 'success.html')
-                    else:
-                        form = ToiletReportForm()
-                    
-                    return render(request, 'report.html', {'form': form})   
+    """
+    Kullanıcıdan gelen bildirimleri alır, veritabanına kaydeder
+    ve Gmail kotası dolduğunda hata vermek yerine uyarı gösterir.
+    """
+    if request.method == 'POST':
+        form = ToiletReportForm(request.POST)
+        if form.is_valid():
+            # Temizlenmiş verileri al
+            cd = form.cleaned_data
+            subject = f"Yeni Tuvalet Bildirimi: {cd['place_name']}"
+            message = f"Mekan: {cd['place_name']}\nKoordinat: {cd['coordinates']}\nBilgi: {cd['description']}"
+            
+            try:
+                # Mail göndermeyi dene
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    ['bisbilge@gmail.com'],
+                    fail_silently=False,
+                )
+                # Mail başarıyla giderse bu mesaj görünecek
+                messages.success(request, "Bildiriminiz başarıyla iletildi!")
+                
+            except Exception as e:
+                # Gmail kotası dolduğunda buraya düşer
+                logger.error(f"Gmail Kotası Hatası: {e}")
+                messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci yarına sarkabilir. Özür dileriz!")
+            
+            return render(request, 'success.html')
+    else:
+        # GET isteği geldiğinde formu oluştur
+        form = ToiletReportForm()
+    
+    # Formda hata varsa veya GET isteğiyse report.html'e dön
+    return render(request, 'report.html', {'form': form})
