@@ -59,7 +59,7 @@ def report_toilet(request):
             except Exception as e:
                 # Gmail kotası dolduğunda buraya düşer
                 logger.error(f"Gmail Kotası Hatası: {e}")
-                messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci yarına sarkabilir. Özür dileriz!")
+                messages.warning(request, "Günlük bildirim limitimize ulaştık. Lütfen daha sonra tekrar deneyiniz. Özür dileriz!")
             
             return render(request, 'success.html')
     else:
