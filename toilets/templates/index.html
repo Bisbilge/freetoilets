@@ -37,7 +37,7 @@
             transform: scale(1.05);
         }
 
-        /* Mobil uyumluluk için küçük dokunuş */
+        /* Mobil uyumluluk */
         @media (max-width: 600px) {
             #report-btn {
                 bottom: 20px;
@@ -52,7 +52,7 @@
 
 <div id="map"></div>
 
-<a id="report-btn" href="mailto:info@freetoilets.org?subject=Yeni Tuvalet Bildirimi&body=Merhaba,%0A%0AYeni bir ücretsiz tuvalet bildirmek istiyorum:%0A%0AMekan Adı:%0AKoordinatlar/Konum:%0AŞifre veya Notlar:%0A%0ATeşekkürler!">
+<a id="report-btn" href="/report/">
     <span>📍</span> Tuvalet Bildir
 </a>
 
@@ -94,7 +94,6 @@
     // Kullanıcının anlık konumunu bulma
     map.locate({setView: true, maxZoom: 16});
 
-    // Konum bulunduğunda mavi bir nokta ekle
     function onLocationFound(e) {
         var radius = e.accuracy / 2;
         L.circle(e.latlng, radius).addTo(map).bindPopup("Şu an buradasınız").openPopup();
