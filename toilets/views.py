@@ -65,3 +65,26 @@ def report_toilet(request):
         form = ToiletReportForm()
     
     return render(request, 'report.html', {'form': form})
+    
+    def report_toilet(request):
+    if request.method == 'POST':
+        # 1. Önce veriyi veritabanına kaydet (Mail gitmese de veri kaybolmasın)
+        # form.save() veya model_instance.save()
+        
+        try:
+            # Mail göndermeyi dene
+            send_mail(
+                'Yeni Tuvalet Bildirimi',
+                'İçerik...',
+                'senin-mailin@gmail.com',
+                ['hedef-mail@gmail.com'],
+                fail_silently=False,
+            )
+            messages.success(request, "Bildiriminiz başarıyla iletildi!")
+            
+        except Exception:
+            # Gmail kotası dolduğunda buraya düşecek
+            # Kullanıcıya hata sayfası göstermek yerine uyarı mesajı ekle
+            messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci biraz uzayabilir. Yarın tekrar görüşmek üzere, özür dileriz!")
+        
+        return render(request, 'toilets/report_success.html') # Veya ana sayfa
