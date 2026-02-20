@@ -6,18 +6,37 @@
     <title>Başarılı! | FreeToilet.org</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-        .success-card { background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .success-card { background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; }
         .icon { font-size: 4rem; color: #2ecc71; margin-bottom: 1rem; }
         h1 { color: #2c3e50; margin-bottom: 1rem; }
-        a { background: #3498db; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        
+        /* Mesaj Stilleri */
+        .messages { list-style: none; padding: 0; margin-bottom: 2rem; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; line-height: 1.4; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        
+        a { background: #3498db; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s; }
+        a:hover { background: #2980b9; }
     </style>
 </head>
 <body>
     <div class="success-card">
         <div class="icon">✅</div>
+        
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         <h1>Bildirim Alındı!</h1>
         <p>Katkın için teşekkürler. Kontrollerden sonra haritaya eklenecektir.</p>
-        <br>
+        <br><br>
         <a href="/">Haritaya Dön</a>
     </div>
 </body>
