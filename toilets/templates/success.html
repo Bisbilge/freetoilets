@@ -22,22 +22,19 @@
 </head>
 <body>
     <div class="success-card">
-        <div class="icon">✅</div>
-        
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </li>
-            {% endfor %}
-        </ul>
+        {% if mail_sent %}
+            <div class="icon">✅</div>
+            <h1>Bildirim Alındı!</h1>
+            <p>Katkın için teşekkürler. Kontrollerden sonra haritaya eklenecektir.</p>
+        {% else %}
+            <div class="icon" style="color: #f1c40f;">⚠️</div>
+            <h1>Günlük Limit Doldu</h1>
+            <p>Yoğun ilgiden dolayı günlük bildirim limitimize ulaştık. Şu an bildirim kabul edemiyoruz, lütfen yarın tekrar deneyin.</p>
+            <p style="font-size: 0.8rem; color: #7f8c8d;">(Veriniz sisteme kaydedilemedi, anlayışınız için teşekkürler.)</p>
         {% endif %}
-
-        <h1>Bildirim Alındı!</h1>
-        <p>Katkın için teşekkürler. Kontrollerden sonra haritaya eklenecektir.</p>
+        
         <br><br>
         <a href="/">Haritaya Dön</a>
-    </div>
+</div>
 </body>
 </html>
