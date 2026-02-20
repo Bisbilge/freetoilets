@@ -4,7 +4,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import Toilet
 from .forms import ToiletReportForm # forms.py'den formu çekiyoruz
-logger = logging.getLogger(__name__)
 def index(request):
     return render(request, 'index.html')
 
