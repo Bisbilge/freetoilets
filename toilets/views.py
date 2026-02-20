@@ -31,36 +31,36 @@ def toilet_data(request):
     
     return JsonResponse(data, safe=False)
 
-    def report_toilet(request):
-        if request.method == 'POST':
-            form = ToiletReportForm(request.POST)
-            if form.is_valid():
-                # 1. Önce veriyi veritabanına kaydet (Mail gitmese de veri bizde kalsın)
-                # form.save() 
-                
-                cd = form.cleaned_data
-                subject = f"Yeni Tuvalet Bildirimi: {cd['place_name']}"
-                message = f"Mekan: {cd['place_name']}\nKoordinat: {cd['coordinates']}"
-                
-                try:
-                    # Mail göndermeyi dene
-                    send_mail(
-                        subject,
-                        message,
-                        settings.EMAIL_HOST_USER,
-                        ['bisbilge@gmail.com'],
-                        fail_silently=False,
-                    )
-                    # Mail başarıyla giderse bu mesaj görünecek
-                    messages.success(request, "Bildiriminiz başarıyla iletildi!")
+def report_toilet(request):
+                if request.method == 'POST':
+                        form = ToiletReportForm(request.POST)
+                        if form.is_valid():
+                            # 1. Önce veriyi veritabanına kaydet (Mail gitmese de veri bizde kalsın)
+                            # form.save() 
+                            
+                            cd = form.cleaned_data
+                            subject = f"Yeni Tuvalet Bildirimi: {cd['place_name']}"
+                            message = f"Mekan: {cd['place_name']}\nKoordinat: {cd['coordinates']}"
+                            
+                            try:
+                                # Mail göndermeyi dene
+                                send_mail(
+                                    subject,
+                                    message,
+                                    settings.EMAIL_HOST_USER,
+                                    ['bisbilge@gmail.com'],
+                                    fail_silently=False,
+                                )
+                                # Mail başarıyla giderse bu mesaj görünecek
+                                messages.success(request, "Bildiriminiz başarıyla iletildi!")
+                                
+                            except Exception:
+                                # Gmail kotası dolduğunda (Daily limit exceeded) buraya düşer
+                                # Kullanıcıya hata sayfası yerine bu uyarıyı gösteriyoruz
+                                messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci yarına sarkabilir. Özür dileriz!")
+                            
+                            return render(request, 'success.html')
+                    else:
+                        form = ToiletReportForm()
                     
-                except Exception:
-                    # Gmail kotası dolduğunda (Daily limit exceeded) buraya düşer
-                    # Kullanıcıya hata sayfası yerine bu uyarıyı gösteriyoruz
-                    messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci yarına sarkabilir. Özür dileriz!")
-                
-                return render(request, 'success.html')
-        else:
-            form = ToiletReportForm()
-        
-        return render(request, 'report.html', {'form': form})
+                    return render(request, 'report.html', {'form': form})   
