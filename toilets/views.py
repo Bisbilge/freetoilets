@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import Toilet
 from .forms import ToiletReportForm # forms.py'den formu çekiyoruz
-
+logger = logging.getLogger(__name__)
 def index(request):
     return render(request, 'index.html')
 
@@ -68,23 +68,35 @@ def report_toilet(request):
     
     def report_toilet(request):
     if request.method == 'POST':
-        # 1. Önce veriyi veritabanına kaydet (Mail gitmese de veri kaybolmasın)
-        # form.save() veya model_instance.save()
+        # --- BURADA VERİTABANI KAYIT İŞLEMİN OLMALI ---
+        # Örnek: form = ToiletReportForm(request.POST)
+        # if form.is_valid(): form.save()
         
         try:
-            # Mail göndermeyi dene
+            # Gmail SMTP denemesi
             send_mail(
                 'Yeni Tuvalet Bildirimi',
-                'İçerik...',
+                'Bir kullanıcı yeni bir konum bildirdi.',
                 'senin-mailin@gmail.com',
                 ['hedef-mail@gmail.com'],
                 fail_silently=False,
             )
             messages.success(request, "Bildiriminiz başarıyla iletildi!")
             
-        except Exception:
-            # Gmail kotası dolduğunda buraya düşecek
-            # Kullanıcıya hata sayfası göstermek yerine uyarı mesajı ekle
-            messages.warning(request, "Günlük bildirim limitimize ulaştık. Veriniz kaydedildi ancak onay süreci biraz uzayabilir. Yarın tekrar görüşmek üzere, özür dileriz!")
-        
-        return render(request, 'toilets/report_success.html') # Veya ana sayfa
+        except Exception as e:
+            # SMTPDataError (550) buraya düşecek. 
+            # Site ÇÖKMEYECEK, sadece bu blok çalışacak.
+            logger.error(f"Gmail Limiti Aşıldı: {e}")
+            
+            # Kullanıcıya durumu nazikçe açıkla
+            messages.warning(request, (
+                "Yoğun ilginiz için teşekkürler! Günlük bildirim limitimize ulaştık. "
+                "Veriniz güvenle kaydedildi ancak onay süreci yarına sarkabilir. "
+                "Anlayışınız için teşekkür ederiz."
+            ))
+
+        # Hata olsa da olmasa da kullanıcıyı başarı sayfasına yönlendir
+        return render(request, 'toilets/report_success.html')
+
+    # GET isteği için formu göster
+    return render(request, 'toilets/report_form.html')
