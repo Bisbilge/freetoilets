@@ -1,0 +1,10 @@
+{
+  "builds": [{
+    "src": "freetoilet_project/wsgi.py",
+    "use": "@vercel/python"
+  }],
+  "routes": [{
+    "src": "/(.*)",
+    "dest": "freetoilet_project/wsgi.py"
+  }]
+}
