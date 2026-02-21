@@ -7,15 +7,15 @@ class Toilet(models.Model):
     # Koordinatlar: max_digits=13 ve decimal_places=10 Google'dan gelen uzun veriyi 
     # hata vermeden kabul eder, ancak biz save metodunda bunu 6 haneye indireceğiz.
     latitude = models.DecimalField(
-        max_digits=20, 
-        decimal_places=6, 
+        max_digits=22, 
+        decimal_places=16, 
         null=True, 
         blank=True, 
         verbose_name="Enlem (Latitude)"
     )
     longitude = models.DecimalField(
-        max_digits=20, 
-        decimal_places=6, 
+        max_digits=22, 
+        decimal_places=16, 
         null=True, 
         blank=True, 
         verbose_name="Boylam (Longitude)"
