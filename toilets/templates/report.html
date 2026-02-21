@@ -11,20 +11,27 @@
         
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
-        input[type="text"], input[type="url"], textarea {
-            width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+        
+        /* Django form inputlarını kapsayan genel stil */
+        input[type="text"], input[type="url"], input[type="number"], textarea {
+            width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.2s;
         }
-        input:focus { border-color: #3498db; outline: none; }
+        input:focus, textarea:focus { border-color: #3498db; outline: none; background-color: #fff; }
         
         .help-text { font-size: 0.85rem; color: #7f8c8d; margin-top: 5px; }
         
         .btn-submit {
             width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 1rem;
         }
         .btn-submit:hover { background: #2980b9; transform: translateY(-2px); }
         
-        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group { 
+            display: flex; align-items: center; gap: 10px; background: #f1f9ff; padding: 12px; border-radius: 8px; margin-bottom: 1.5rem;
+        }
+        
+        /* Ücret alanını başlangıçta gizlemek için (isteğe bağlı) */
+        #price-section { display: none; border-left: 4px solid #3498db; padding-left: 15px; }
     </style>
 </head>
 <body>
@@ -42,7 +49,18 @@
             <div class="form-group">
                 <label for="id_maps_url">Google Maps Linki (Zorunlu)</label>
                 {{ form.maps_url }}
-                <p class="help-text">Google Haritalar'da konumu seçip "Paylaş" diyerek aldığınız linki buraya yapıştırın.</p>
+                <p class="help-text">Haritalar'da konumu "Paylaş" diyerek aldığınız linki yapıştırın.</p>
+            </div>
+
+            <div class="form-group checkbox-group">
+                {{ form.is_free }}
+                <label for="id_is_free" style="margin: 0;">Bu tuvalet ücretsiz mi?</label>
+            </div>
+
+            <div class="form-group" id="price-section">
+                <label for="id_price">Kullanım Ücreti (₺)</label>
+                {{ form.price }}
+                <p class="help-text">Lütfen sadece rakam giriniz.</p>
             </div>
 
             <div class="form-group">
@@ -51,13 +69,26 @@
                 <p class="help-text">Giriş kodu, temizlik durumu veya tam yer tarifi...</p>
             </div>
 
-            <div class="form-group checkbox-group">
-                {{ form.is_free }}
-                <label for="id_is_free" style="margin: 0;">Bu tuvalet ücretsiz mi?</label>
-            </div>
-
             <button type="submit" class="btn-submit">Bildirimi Gönder</button>
         </form>
     </div>
+
+    <script>
+        const isFreeCheckbox = document.querySelector('#id_is_free');
+        const priceSection = document.querySelector('#price-section');
+
+        function togglePrice() {
+            // Eğer ücretsiz DEĞİLSE (işaretli değilse) ücret alanını göster
+            if (!isFreeCheckbox.checked) {
+                priceSection.style.display = 'block';
+            } else {
+                priceSection.style.display = 'none';
+            }
+        }
+
+        // Sayfa yüklendiğinde ve checkbox değiştiğinde kontrol et
+        isFreeCheckbox.addEventListener('change', togglePrice);
+        window.addEventListener('load', togglePrice);
+    </script>
 </body>
 </html>
