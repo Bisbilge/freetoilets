@@ -1,7 +1,15 @@
 from django import forms
+from .models import Toilet
 
-class ToiletReportForm(forms.Form):
-    place_name = forms.CharField(label='Mekan Adı', max_length=100)
-    coordinates = forms.CharField(label='Koordinatlar (veya Konum Linki)', max_length=200)
-    is_free = forms.BooleanField(label='Ücretsiz mi?', required=False)
-    description = forms.CharField(label='Ek Notlar (Şifre vb.)', widget=forms.Textarea)
+class ToiletReportForm(forms.ModelForm):
+    class Meta:
+        model = Toilet
+        # Kullanıcıya sadece bunları gösteriyoruz
+        fields = ['name', 'maps_url', 'is_free', 'description']
+        widgets = {
+            'maps_url': forms.URLInput(attrs={
+                'placeholder': 'https://www.google.com/maps/...',
+                'required': 'required',
+                'class': 'form-control'
+            }),
+        }
