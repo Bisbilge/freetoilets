@@ -8,14 +8,14 @@ class Toilet(models.Model):
     # hata vermeden kabul eder, ancak biz save metodunda bunu 6 haneye indireceğiz.
     latitude = models.DecimalField(
         max_digits=20, 
-        decimal_places=15, 
+        decimal_places=6, 
         null=True, 
         blank=True, 
         verbose_name="Enlem (Latitude)"
     )
     longitude = models.DecimalField(
         max_digits=20, 
-        decimal_places=15, 
+        decimal_places=6, 
         null=True, 
         blank=True, 
         verbose_name="Boylam (Longitude)"
