@@ -16,13 +16,13 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'), # Eğer projenin içinde kendi static klasörün varsa
 ]
 # collectstatic komutu çalışınca dosyaların toplanacağı ana dizin
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
+WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 # WhiteNoise'un verimli çalışması için depolama ayarı
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
