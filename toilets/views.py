@@ -33,6 +33,7 @@ def toilet_data(request):
             })
     
     return JsonResponse(data, safe=False)
+    
 
 def report_toilet(request):
     if request.method == 'POST':
