@@ -1,12 +1,10 @@
 import re
-import requests
 from django.db import models
 from decimal import Decimal, ROUND_HALF_UP
 
 class Toilet(models.Model):
     name = models.CharField(max_length=255, verbose_name="Mekan Adı") 
     
-    # Koordinatlar: Veritabanında 16 hane saklıyoruz
     latitude = models.DecimalField(
         max_digits=22, 
         decimal_places=16, 
@@ -48,42 +46,22 @@ class Toilet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eklenme Tarihi")
 
     def save(self, *args, **kwargs):
-        # 1. Google Maps Linkinden Koordinat Ayıklama
+        # 1. Uzun Google Maps Linkinden Koordinat Ayıklama (Offline/Statik)
         if self.maps_url and (not self.latitude or not self.longitude):
-            target_url = self.maps_url
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            }
+            # Regex 1: Standart @41.123,28.123 veya q=41.123,28.123 yapısı
+            pattern_std = r"([-+]?\d{1,2}\.\d+),\s*([-+]?\d{1,3}\.\d+)"
+            # Regex 2: Google'ın iç yapı formatı (!3d41.123!4d28.123)
+            pattern_long = r"!3d([-+]?\d{1,2}\.\d+)!4d([-+]?\d{1,3}\.\d+)"
 
-            try:
-                # stream=False yapıyoruz çünkü bazen sayfa içeriğini okumamız gerekecek
-                response = requests.get(target_url, allow_redirects=True, timeout=10, headers=headers)
-                final_url = response.url
-                html_content = response.text # Sayfa içeriğini aldık
+            # Önce standart formatı, yoksa 'long' formatını dene
+            match = re.search(pattern_std, self.maps_url) or re.search(pattern_long, self.maps_url)
 
-                # Regex 1: Standart @lat,lng veya q=lat,lng
-                pattern_std = r"([-+]?\d{1,2}\.\d+),\s*([-+]?\d{1,3}\.\d+)"
-                # Regex 2: Google'ın 'long' formatı (!3d41.123!4d28.123)
-                pattern_long = r"!3d([-+]?\d{1,2}\.\d+)!4d([-+]?\d{1,3}\.\d+)"
+            if match:
+                self.latitude = Decimal(match.group(1))
+                self.longitude = Decimal(match.group(2))
 
-                # Önce URL içinde ara
-                match = re.search(pattern_std, final_url) or re.search(pattern_long, final_url)
-                
-                # Eğer URL'de bulamazsan HTML içeriği (meta tagler) içinde ara
-                if not match:
-                    match = re.search(pattern_std, html_content) or re.search(pattern_long, html_content)
-
-                if match:
-                    self.latitude = Decimal(match.group(1))
-                    self.longitude = Decimal(match.group(2))
-                    print(f"DEBUG: Başarıyla yakalandı -> {self.latitude}, {self.longitude}")
-                else:
-                    print(f"DEBUG: Hiçbir yerde koordinat bulunamadı: {final_url}")
-
-            except Exception as e:
-                print(f"URL çözme hatası: {e}")
-
-        # 2. Hassas Yuvarlama (6 Hane - Matematikçi Hassasiyeti)
+        # 2. Hassas Yuvarlama (6 Hane Hassasiyeti)
+        # Matematiksel olarak 10^-6 mertebesinde hassasiyet yeterlidir.
         if self.latitude is not None:
             self.latitude = Decimal(str(self.latitude)).quantize(
                 Decimal('0.000001'), 
@@ -96,6 +74,7 @@ class Toilet(models.Model):
             )
         
         super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
