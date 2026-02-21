@@ -1,11 +1,11 @@
+import re
+import requests
 from django.db import models
 from decimal import Decimal, ROUND_HALF_UP
 
 class Toilet(models.Model):
     name = models.CharField(max_length=255, verbose_name="Mekan Adı") 
     
-    # Koordinatlar: max_digits=13 ve decimal_places=10 Google'dan gelen uzun veriyi 
-    # hata vermeden kabul eder, ancak biz save metodunda bunu 6 haneye indireceğiz.
     latitude = models.DecimalField(
         max_digits=22, 
         decimal_places=16, 
@@ -21,7 +21,6 @@ class Toilet(models.Model):
         verbose_name="Boylam (Longitude)"
     )
     
-    # Kullanıcının formdan gönderdiği Google Maps linki
     maps_url = models.URLField(
         max_length=500, 
         null=True, 
@@ -44,18 +43,33 @@ class Toilet(models.Model):
         verbose_name="Giriş Kodu (Varsa)"
     )
     description = models.TextField(blank=True, verbose_name="Açıklama/Notlar")
-    
-    # Admin Onay Mekanizması
     is_approved = models.BooleanField(default=False, verbose_name="Onaylandı mı?")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eklenme Tarihi")
 
     def save(self, *args, **kwargs):
-        """
-        Google Maps'ten kopyalanan 41.034943016249244 gibi çok uzun koordinatları
-        veritabanına kaydetmeden önce 6 haneye (hassasiyet kaybı olmadan) yuvarlar.
-        """
+        # 1. Google Maps Linkinden Koordinat Ayıklama
+        if self.maps_url and (not self.latitude or not self.longitude):
+            target_url = self.maps_url
+            
+            # Eğer link kısaltılmışsa (goo.gl veya maps.app.goo.gl) gerçek URL'ye git
+            if "goo.gl" in target_url:
+                try:
+                    # Sadece header çekerek yönlendirmeyi takip et (Hızlıdır)
+                    response = requests.head(target_url, allow_redirects=True, timeout=5)
+                    target_url = response.url
+                except Exception as e:
+                    print(f"URL çözülürken hata: {e}")
+
+            # Regex: @lat,lng veya q=lat,lng formatlarını yakalar
+            pattern = r"([-+]?\d{1,2}\.\d+),\s*([-+]?\d{1,3}\.\d+)"
+            match = re.search(pattern, target_url)
+            
+            if match:
+                self.latitude = Decimal(match.group(1))
+                self.longitude = Decimal(match.group(2))
+
+        # 2. Hassas Yuvarlama (6 Hane Kuralı)
         if self.latitude is not None:
-            # Decimal kullanarak hassas yuvarlama yapıyoruz
             self.latitude = Decimal(str(self.latitude)).quantize(
                 Decimal('0.000001'), 
                 rounding=ROUND_HALF_UP
