@@ -29,7 +29,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 SECRET_KEY = 'django-insecure-amvbwkir6yf=9vv9x2h50xq)8*#feqwia45+x1p+u3fxwtz%2u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'freetoilets.vercel.app', 
