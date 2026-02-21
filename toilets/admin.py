@@ -22,27 +22,10 @@ class ToiletAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         """
-        Alanların okunabilirlik (kilit) durumunu dinamik olarak belirleriz.
+        Sadece sistemin oluşturduğu eklenme tarihi kilitlidir.
+        Moderatörler onay kutusu dahil her alanı değiştirebilir.
         """
-        # 1. Sistem saati herkes için her zaman kilitlidir.
-        readonly = ['created_at']
-        
-        # 2. Eğer kullanıcı Süper Kullanıcı DEĞİLSE (yani moderatörse),
-        # is_approved kutucuğunu da kilitliyoruz ki işaretlemeye çalışmasın.
-        if not request.user.is_superuser:
-            readonly.append('is_approved')
-            
-        # DİKKAT: 'latitude' ve 'longitude' bu listede YER ALMADIĞI İÇİN
-        # moderatörler tarafından özgürce değiştirilebilir.
-        return tuple(readonly)
+        return ('created_at',)
 
-    def save_model(self, request, obj, form, change):
-        """
-        Arka plan güvenliği (Backend Security Validation)
-        """
-        if not request.user.is_superuser:
-            # Moderatör kaydettiği an onay kesinlikle düşer.
-            obj.is_approved = False
-            self.message_user(request, f"Bilgi: '{obj.name}' moderatör işlemi olduğu için onay bekliyor.")
-        
-        super().save_model(request, obj, form, change)
+    # save_model metodunu tamamen sildik, çünkü artık arka planda
+    # onayı iptal eden (False yapan) özel bir kurala ihtiyacımız yok.
