@@ -1,9 +1,6 @@
 import logging
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import JsonResponse
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib import messages
 from .models import Toilet
 from .forms import ToiletReportForm
 
@@ -11,16 +8,17 @@ from .forms import ToiletReportForm
 logger = logging.getLogger(__name__)
 
 def index(request):
+    """Ana sayfa."""
     return render(request, 'index.html')
 
 def toilet_data(request):
-    """Harita için sadece ONAYLANMIŞ ve KOORDİNATI OLAN tuvaletleri döndürür."""
-    # Sadece onaylıları çekiyoruz
+    """Harita için sadece ONAYLANMIŞ ve KOORDİNATI OLAN tuvaletleri JSON olarak döndürür."""
+    # Sadece admin onayı almış kayıtları çekiyoruz
     toilets = Toilet.objects.filter(is_approved=True)
     data = []
-    
+
     for t in toilets:
-        # ÖNEMLİ: Sadece koordinatı olanları ekle, yoksa harita çöker
+        # Koordinatı olmayan (henüz admin tarafından işlenmemiş) verileri haritaya gönderme
         if t.latitude is not None and t.longitude is not None:
             data.append({
                 'name': t.name,
@@ -31,23 +29,33 @@ def toilet_data(request):
                 'code': t.code if t.code else "Gerekmiyor",
                 'desc': t.description
             })
-    
+
     return JsonResponse(data, safe=False)
-    
 
 def report_toilet(request):
+    """Bot korumalı (Honeypot + Filtre) bildirim formu."""
     if request.method == 'POST':
+        # --- 1. SAVUNMA HATTI: HONEYPOT (BAL KÜPÜ) ---
+        # Eğer gizli 'website_url' alanı doluysa bu bir bottur.
+        if request.POST.get('website_url'):
+            # Botu engelle ama başarı sayfasına gönder ki bot pes etmesin
+            return render(request, 'success.html', {'mail_sent': True})
+
         form = ToiletReportForm(request.POST)
+        
         if form.is_valid():
-            # 1. Veriyi veritabanına kaydet (is_approved varsayılan olarak False gelir)
-            # Mail gitmese bile veriler artık Admin panelinde seni bekleyecek.
-            form.save() 
+            # --- 2. SAVUNMA HATTI: SPAM KELİME FİLTRESİ ---
+            name = form.cleaned_data.get('name', '').upper()
+            spam_keywords = ['CEYDA', 'AFFET', 'PİŞMANIM']
             
-            # Artık mail gönderme kısmını devre dışı bıraktık (SMTP hatası almamak için)
-            # Ama success.html'e sanki mail gitmiş gibi bilgi veriyoruz ki ekran düzgün görünsün.
-            # Dilersen buraya 'onay_bekliyor': True gibi bir değişken de gönderebilirsin.
+            if any(word in name for word in spam_keywords):
+                # Spam ise kaydetmeden başarı sayfasına yönlendir
+                return render(request, 'success.html', {'mail_sent': True})
+
+            # Eğer her şey temizse veritabanına onaysız (False) olarak kaydet
+            form.save() 
             return render(request, 'success.html', {'mail_sent': True})
     else:
         form = ToiletReportForm()
-    
+
     return render(request, 'report.html', {'form': form})
