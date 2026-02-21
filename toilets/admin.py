@@ -1,12 +1,16 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from simple_history.admin import SimpleHistoryAdmin
 from .models import Toilet
 
 @admin.register(Toilet)
-class ToiletAdmin(admin.ModelAdmin):
+class ToiletAdmin(SimpleHistoryAdmin):
     list_display = ('name', 'is_approved', 'show_maps_url', 'created_at')
     list_filter = ('is_approved',)
     search_fields = ('name', 'description')
+    
+    # Geçmiş kayıtları tablosunda ekstra hangi sütunlar görünsün
+    history_list_display = ["is_approved"]
     
     def show_maps_url(self, obj):
         if obj.maps_url:
@@ -26,6 +30,3 @@ class ToiletAdmin(admin.ModelAdmin):
         Moderatörler onay kutusu dahil her alanı değiştirebilir.
         """
         return ('created_at',)
-
-    # save_model metodunu tamamen sildik, çünkü artık arka planda
-    # onayı iptal eden (False yapan) özel bir kurala ihtiyacımız yok.
