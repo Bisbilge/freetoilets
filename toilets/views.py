@@ -14,20 +14,23 @@ def index(request):
     return render(request, 'index.html')
 
 def toilet_data(request):
-    """Harita için tuvalet verilerini JSON olarak döndürür."""
-    toilets = Toilet.objects.all()
+    """Harita için sadece ONAYLANMIŞ ve KOORDİNATI OLAN tuvaletleri döndürür."""
+    # Sadece onaylıları çekiyoruz
+    toilets = Toilet.objects.filter(is_approved=True)
     data = []
     
     for t in toilets:
-        data.append({
-            'name': t.name,
-            'lat': float(t.latitude),
-            'lng': float(t.longitude),
-            'is_free': t.is_free,
-            'price': str(t.price) if t.price else "0",
-            'code': t.code if t.code else "Gerekmiyor",
-            'desc': t.description
-        })
+        # ÖNEMLİ: Sadece koordinatı olanları ekle, yoksa harita çöker
+        if t.latitude is not None and t.longitude is not None:
+            data.append({
+                'name': t.name,
+                'lat': float(t.latitude),
+                'lng': float(t.longitude),
+                'is_free': t.is_free,
+                'price': str(t.price) if t.price else "0",
+                'code': t.code if t.code else "Gerekmiyor",
+                'desc': t.description
+            })
     
     return JsonResponse(data, safe=False)
 
