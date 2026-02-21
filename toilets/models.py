@@ -1,6 +1,7 @@
 import re
 from django.db import models
 from decimal import Decimal, ROUND_HALF_UP
+from simple_history.models import HistoricalRecords
 
 class Toilet(models.Model):
     name = models.CharField(max_length=255, verbose_name="Mekan Adı") 
@@ -45,6 +46,9 @@ class Toilet(models.Model):
     is_approved = models.BooleanField(default=False, verbose_name="Onaylandı mı?")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eklenme Tarihi")
 
+    # Geçmiş kayıtlarını tutacak olan nesne
+    history = HistoricalRecords()
+
     def save(self, *args, **kwargs):
         # 1. Uzun Google Maps Linkinden Koordinat Ayıklama (Offline/Statik)
         if self.maps_url and (not self.latitude or not self.longitude):
@@ -61,7 +65,6 @@ class Toilet(models.Model):
                 self.longitude = Decimal(match.group(2))
 
         # 2. Hassas Yuvarlama (6 Hane Hassasiyeti)
-        # Matematiksel olarak 10^-6 mertebesinde hassasiyet yeterlidir.
         if self.latitude is not None:
             self.latitude = Decimal(str(self.latitude)).quantize(
                 Decimal('0.000001'), 
