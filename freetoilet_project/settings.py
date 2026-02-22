@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'toilets',
     'simple_history',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +147,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = ''
+
+RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', 'default_public_key')
+RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', 'default_private_key')
+
+# (Opsiyonel) Vercel'de HTTPS zorunlu olduğu için şunu da eklemek iyi olabilir:
+RECAPTCHA_PROXY = {
+    'http': 'http://127.0.0.1:8000', # Yerel test için
+    'https': 'https://www.freetoilets.org', # Canlı site için
+}
