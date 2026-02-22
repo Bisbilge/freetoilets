@@ -153,7 +153,3 @@ RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', 'default_public_ke
 RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', 'default_private_key')
 
 # (Opsiyonel) Vercel'de HTTPS zorunlu olduğu için şunu da eklemek iyi olabilir:
-RECAPTCHA_PROXY = {
-    'http': 'http://127.0.0.1:8000', # Yerel test için
-    'https': 'https://www.freetoilets.org', # Canlı site için
-}
