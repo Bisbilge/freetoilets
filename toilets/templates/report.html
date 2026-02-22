@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yeni Tuvalet Bildir | FreeToilet.org</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; color: #2c3e50; line-height: 1.6; }
         .container { max-width: 600px; margin: 3rem auto; background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -29,7 +30,6 @@
             display: flex; align-items: center; gap: 10px; background: #f1f9ff; padding: 12px; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #d6eaf8;
         }
 
-        /* Dinamik olarak açılan alanlar için vurgu */
         #price-section { 
             display: none; 
             border-left: 4px solid #3498db; 
@@ -40,10 +40,19 @@
         }
         
         .code-section {
-            border-left: 4px solid #e67e22; /* Şifre alanı için turuncu vurgu */
+            border-left: 4px solid #e67e22;
             padding-left: 15px;
             margin-top: 1.5rem;
         }
+
+        .captcha-container {
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .error-list { color: #e74c3c; font-size: 0.85rem; list-style: none; padding: 0; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -84,7 +93,18 @@
             <div class="form-group">
                 <label for="id_description">Ek Bilgiler</label>
                 {{ form.description }}
-                <p class="help-text">Temizlik durumu, tam yer tarifi (örn: -2. katta) vb.</p>
+                <p class="help-text">Temizlik durumu, tam yer tarifi vb.</p>
+            </div>
+
+            <div class="captcha-container">
+                {{ form.captcha }}
+                {% if form.captcha.errors %}
+                    <ul class="error-list">
+                        {% for error in form.captcha.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
 
             <button type="submit" class="btn-submit">Bildirimi Gönder</button>
@@ -96,7 +116,6 @@
         const priceSection = document.querySelector('#price-section');
 
         function togglePrice() {
-            // Checkbox işaretli değilse (ücretliyse) fiyat alanını göster
             if (!isFreeCheckbox.checked) {
                 priceSection.style.display = 'block';
             } else {

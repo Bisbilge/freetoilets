@@ -1,11 +1,16 @@
 from django import forms
 from .models import Toilet
+from captcha.fields import ReCaptchaField
+from captcha.widgets import ReCaptchaV2Checkbox
 
 class ToiletReportForm(forms.ModelForm):
+    # reCAPTCHA alanı modele bağlı olmayan özel bir alan olduğu için burada tanımlanır
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
+
     class Meta:
         model = Toilet
-        # 'price' ve 'code' alanlarını listeye dahil ettik
-        fields = ['name', 'maps_url', 'is_free', 'price', 'code', 'description']
+        # Formda görünecek alanların tam listesi
+        fields = ['name', 'maps_url', 'is_free', 'price', 'code', 'description', 'captcha']
         
         widgets = {
             'name': forms.TextInput(attrs={
