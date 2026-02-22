@@ -54,9 +54,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_recaptcha',
     'toilets',
     'simple_history',
-    'captcha',
+    
 ]
 
 MIDDLEWARE = [
