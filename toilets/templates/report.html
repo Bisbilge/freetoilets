@@ -12,11 +12,10 @@
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
         
-        /* Django form inputlarını kapsayan genel stil */
         input[type="text"], input[type="url"], input[type="number"], textarea {
             width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.2s;
         }
-        input:focus, textarea:focus { border-color: #3498db; outline: none; background-color: #fff; }
+        input:focus, textarea:focus { border-color: #3498db; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(52, 152, 219, 0.1); }
         
         .help-text { font-size: 0.85rem; color: #7f8c8d; margin-top: 5px; }
         
@@ -27,11 +26,24 @@
         .btn-submit:hover { background: #2980b9; transform: translateY(-2px); }
         
         .checkbox-group { 
-            display: flex; align-items: center; gap: 10px; background: #f1f9ff; padding: 12px; border-radius: 8px; margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 10px; background: #f1f9ff; padding: 12px; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #d6eaf8;
+        }
+
+        /* Dinamik olarak açılan alanlar için vurgu */
+        #price-section { 
+            display: none; 
+            border-left: 4px solid #3498db; 
+            padding-left: 15px; 
+            background: #fcfcfc;
+            padding-top: 5px;
+            padding-bottom: 5px;
         }
         
-        /* Ücret alanını başlangıçta gizlemek için (isteğe bağlı) */
-        #price-section { display: none; border-left: 4px solid #3498db; padding-left: 15px; }
+        .code-section {
+            border-left: 4px solid #e67e22; /* Şifre alanı için turuncu vurgu */
+            padding-left: 15px;
+            margin-top: 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -43,7 +55,7 @@
             <div class="form-group">
                 <label for="id_name">Mekan Adı</label>
                 {{ form.name }}
-                <p class="help-text">Örn: Kadıköy İskele, Starbucks, Beşiktaş Meydan...</p>
+                <p class="help-text">Örn: Beşiktaş Starbucks, Kadıköy Metro Girişi...</p>
             </div>
 
             <div class="form-group">
@@ -54,19 +66,25 @@
 
             <div class="form-group checkbox-group">
                 {{ form.is_free }}
-                <label for="id_is_free" style="margin: 0;">Bu tuvalet ücretsiz mi?</label>
+                <label for="id_is_free" style="margin: 0; cursor: pointer;">Bu tuvalet ücretsiz mi?</label>
             </div>
 
             <div class="form-group" id="price-section">
                 <label for="id_price">Kullanım Ücreti (₺)</label>
                 {{ form.price }}
-                <p class="help-text">Lütfen sadece rakam giriniz.</p>
+                <p class="help-text">Yaklaşık tutarı rakam olarak giriniz.</p>
+            </div>
+
+            <div class="form-group code-section">
+                <label for="id_code">Giriş Kodu / Şifre (Varsa)</label>
+                {{ form.code }}
+                <p class="help-text">Kapı kilitliyse veya fiş üzerinde şifre varsa buraya yazın.</p>
             </div>
 
             <div class="form-group">
                 <label for="id_description">Ek Bilgiler</label>
                 {{ form.description }}
-                <p class="help-text">Giriş kodu, temizlik durumu veya tam yer tarifi...</p>
+                <p class="help-text">Temizlik durumu, tam yer tarifi (örn: -2. katta) vb.</p>
             </div>
 
             <button type="submit" class="btn-submit">Bildirimi Gönder</button>
@@ -78,7 +96,7 @@
         const priceSection = document.querySelector('#price-section');
 
         function togglePrice() {
-            // Eğer ücretsiz DEĞİLSE (işaretli değilse) ücret alanını göster
+            // Checkbox işaretli değilse (ücretliyse) fiyat alanını göster
             if (!isFreeCheckbox.checked) {
                 priceSection.style.display = 'block';
             } else {
@@ -86,7 +104,6 @@
             }
         }
 
-        // Sayfa yüklendiğinde ve checkbox değiştiğinde kontrol et
         isFreeCheckbox.addEventListener('change', togglePrice);
         window.addEventListener('load', togglePrice);
     </script>

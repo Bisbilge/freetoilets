@@ -4,8 +4,8 @@ from .models import Toilet
 class ToiletReportForm(forms.ModelForm):
     class Meta:
         model = Toilet
-        # 'price' alanını listeye dahil ettik
-        fields = ['name', 'maps_url', 'is_free', 'price', 'description']
+        # 'price' ve 'code' alanlarını listeye dahil ettik
+        fields = ['name', 'maps_url', 'is_free', 'price', 'code', 'description']
         
         widgets = {
             'name': forms.TextInput(attrs={
@@ -22,13 +22,17 @@ class ToiletReportForm(forms.ModelForm):
             }),
             'price': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ücretliyse fiyat (Örn: 5.00 veya 10)',
-                'step': '0.50',  # 5.50 gibi küsüratlı girişlere izin verir
-                'min': '0'       # Negatif fiyat girilmesini engeller
+                'placeholder': 'Ücretliyse fiyat (Örn: 10.00)',
+                'step': '0.50',
+                'min': '0'
+            }),
+            'code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Varsa kapı şifresi (Örn: 1234#)',
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
-                'placeholder': 'Varsa eklemek istedikleriniz (Temizlik durumu, kapı şifresi vb.)'
+                'placeholder': 'Temizlik durumu veya tam yer tarifi...'
             }),
         }
