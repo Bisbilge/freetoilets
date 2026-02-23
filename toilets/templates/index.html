@@ -17,7 +17,6 @@
         .price-tag { color: #e74c3c; font-weight: bold; }
         .free-tag { color: #27ae60; font-weight: bold; }
         
-        /* Tuvalet Bildir Butonu Stili */
         #report-btn {
             position: fixed;
             bottom: 30px;
@@ -41,7 +40,6 @@
             transform: scale(1.05);
         }
 
-        /* Mobil uyumluluk */
         @media (max-width: 600px) {
             #report-btn {
                 bottom: 20px;
@@ -61,22 +59,22 @@
 </a>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
-    // Haritayı başlat (İstanbul merkezli)
     var map = L.map('map').setView([41.0082, 28.9784], 13);
 
-    // Harita katmanını ekle (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // KÜMELEME GRUBUNU OLUŞTUR (Yeni Eklendi)
-    var markers = L.markerClusterGroup();
+    // KÜMELEME AYARLARI GÜNCELLENDİ
+    var markers = L.markerClusterGroup({
+        maxClusterRadius: 30, // Baloncukların birbirini yutma mesafesini azalttık (Varsayılan 80'di)
+        disableClusteringAtZoom: 17, // 17 zoom seviyesine gelince kümelemeyi tamamen iptal et, tekil göster
+        spiderfyOnMaxZoom: true // Aynı noktadaki markerları bacak gibi açar
+    });
 
-    // API'den verileri çek ve işaretçileri ekle
     fetch('/api/toilets/')
         .then(response => response.json())
         .then(data => {
@@ -94,20 +92,16 @@
                     </div>
                 `;
 
-                // Marker'ı oluştur, pop-up'ı bağla ama doğrudan map'e EKLEME
                 var marker = L.marker([toilet.lat, toilet.lng])
                     .bindPopup(popupContent);
                 
-                // Oluşturulan marker'ı küme grubuna ekle (Yeni Eklendi)
                 markers.addLayer(marker);
             });
             
-            // Döngü bittikten sonra tüm kümeyi tek seferde haritaya ekle (Yeni Eklendi)
             map.addLayer(markers);
         })
         .catch(err => console.error("Veri yüklenemedi:", err));
 
-    // Kullanıcının anlık konumunu bulma
     map.locate({setView: true, maxZoom: 16});
 
     function onLocationFound(e) {
