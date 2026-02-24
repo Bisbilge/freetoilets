@@ -32,24 +32,19 @@ def toilet_data(request):
     return JsonResponse(data, safe=False)
 
 def report_toilet(request):
-    """Bot korumalı YENİ TUVALET EKLEME formu."""
     if request.method == 'POST':
-        # --- 1. SAVUNMA HATTI: HONEYPOT (BAL KÜPÜ) ---
-        if request.POST.get('website_url'):
-            return render(request, 'success.html', {'mail_sent': True})
+        # Honeypot ve Spam Filtresi (Botları ve istenmeyen kelimeleri sessizce başarı sayfasına yolla)
+        honeypot = request.POST.get('website_url')
+        name_input = request.POST.get('name', '').upper()
+        spam_keywords = ['CEYDA', 'AFFET', 'PİŞMANIM']
+
+        if honeypot or any(word in name_input for word in spam_keywords):
+            return render(request, 'success.html')
 
         form = ToiletReportForm(request.POST)
-        
         if form.is_valid():
-            # --- 2. SAVUNMA HATTI: SPAM KELİME FİLTRESİ ---
-            name = form.cleaned_data.get('name', '').upper()
-            spam_keywords = ['CEYDA', 'AFFET', 'PİŞMANIM']
-            
-            if any(word in name for word in spam_keywords):
-                return render(request, 'success.html', {'mail_sent': True})
-
-            form.save() 
-            return render(request, 'success.html', {'mail_sent': True})
+            form.save()
+            return render(request, 'success.html')
     else:
         form = ToiletReportForm()
 
