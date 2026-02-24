@@ -59,6 +59,26 @@
         
         .desc-text { font-size: 14px; color: var(--dark); line-height: 1.6; font-weight: 500; background: #FFFDF2; padding: 10px; border-left: 4px solid var(--warning); margin-top: 8px; }
 
+        /* Pop-up İçi Hata Bildir Butonu */
+        .popup-report-btn {
+            display: block;
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 14px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 3px solid var(--dark);
+            transition: background 0.2s ease;
+        }
+        .popup-report-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
         /* Zıp Zıp, Enerjik Ana Buton */
         #report-btn {
             position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%);
@@ -66,14 +86,14 @@
             padding: 16px 36px; border-radius: 14px; text-decoration: none;
             font-size: 18px; font-weight: 900; letter-spacing: 1px;
             border: 3px solid var(--dark);
-            box-shadow: 6px 6px 0px var(--dark); /* Kalın, oyuncaklı gölge */
+            box-shadow: 6px 6px 0px var(--dark); 
             transition: all 0.15s ease-in-out;
             display: flex; align-items: center; gap: 10px;
             white-space: nowrap; text-transform: uppercase;
         }
         #report-btn:hover { 
             transform: translateX(-50%) translateY(4px); 
-            box-shadow: 2px 2px 0px var(--dark); /* Basılma hissi */
+            box-shadow: 2px 2px 0px var(--dark); 
             background-color: #ff3344;
         }
 
@@ -115,12 +135,10 @@
     var map = L.map('map', { zoomControl: false }).setView([41.0082, 28.9784], 13);
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Orijinal, renkli, sokakları ve yeşillikleri belli olan OpenStreetMap altlığını geri getirdik
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Kümeleri patlayan, fosforlu renklere çevirdik
     var markers = L.markerClusterGroup({
         maxClusterRadius: 45,
         disableClusteringAtZoom: 17,
@@ -165,6 +183,7 @@
                             </div>
                             ${safeDesc ? `<div class="desc-text">${safeDesc}</div>` : ''}
                         </div>
+                        <a href="/report-issue/?id=${toilet.id}" class="popup-report-btn">⚠️ Hata Bildir</a>
                     </div>
                 `;
 
@@ -177,7 +196,6 @@
         })
         .catch(err => console.error("Veri hatası:", err));
 
-    // Canlı konum işaretini parlak ve dikkat çekici yaptık
     map.locate({setView: true, maxZoom: 15});
     map.on('locationfound', function(e) {
         L.circle(e.latlng, e.accuracy / 2, {

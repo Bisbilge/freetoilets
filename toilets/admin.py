@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.urls import reverse
 from simple_history.admin import SimpleHistoryAdmin
-from .models import Toilet
+
+# Kendi modellerini import et. 'ToiletReport' ismini kendi model isminle değiştir.
+from .models import Toilet, ToiletReport 
 
 @admin.register(Toilet)
 class ToiletAdmin(SimpleHistoryAdmin):
@@ -30,3 +33,33 @@ class ToiletAdmin(SimpleHistoryAdmin):
         Moderatörler onay kutusu dahil her alanı değiştirebilir.
         """
         return ('created_at',)
+
+
+# --- YENİ EKLENEN ŞİKAYET / RAPOR SİSTEMİ ADMİNİ ---
+
+@admin.register(ToiletReport)
+class ToiletReportAdmin(admin.ModelAdmin):
+    # Admin panelinde görünecek sütunlar: İlgili tuvalet linki ve şikayet nedeni eklendi
+    list_display = ('id', 'toilet_link', 'reason', 'is_resolved', 'created_at')
+    
+    # Sağ taraftaki filtreleme menüsü
+    list_filter = ('reason', 'is_resolved', 'created_at')
+    
+    # Arama çubuğunda neye göre arama yapılacak
+    search_fields = ('description', 'toilet__name')
+    
+    actions = ['mark_as_resolved']
+
+    # 1. İstediğin özellik: Tek tıkla ilgili tuvaletin düzenleme sayfasına gitme
+    def toilet_link(self, obj):
+        if obj.toilet:
+            # ÖNEMLİ: 'toilets' kısmı uygulamanın (app) adıdır. Uygulamanın adı farklıysa burayı güncelle.
+            url = reverse('admin:toilets_toilet_change', args=[obj.toilet.id])
+            return format_html('<a href="{}" style="font-weight:bold; color:#1E90FF; text-decoration:underline;">{} (Düzenle)</a>', url, obj.toilet.name)
+        return "-"
+    toilet_link.short_description = 'İlgili Tuvalet'
+
+    # 2. Ekstra özellik: Şikayetleri topluca "Çözüldü" olarak işaretleme aksiyonu
+    @admin.action(description='Seçili şikayetleri "Çözüldü" olarak işaretle')
+    def mark_as_resolved(self, request, queryset):
+        queryset.update(is_resolved=True)

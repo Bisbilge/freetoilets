@@ -1,8 +1,8 @@
 import logging
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from .models import Toilet
-from .forms import ToiletReportForm
+from .models import Toilet, ToiletReport # ToiletReport modelini import ettik
+from .forms import ToiletReportForm, ToiletIssueForm # Yeni formumuzu import ettik
 
 # Hataları loglamak için
 logger = logging.getLogger(__name__)
@@ -13,14 +13,13 @@ def index(request):
 
 def toilet_data(request):
     """Harita için sadece ONAYLANMIŞ ve KOORDİNATI OLAN tuvaletleri JSON olarak döndürür."""
-    # Sadece admin onayı almış kayıtları çekiyoruz
     toilets = Toilet.objects.filter(is_approved=True)
     data = []
 
     for t in toilets:
-        # Koordinatı olmayan (henüz admin tarafından işlenmemiş) verileri haritaya gönderme
         if t.latitude is not None and t.longitude is not None:
             data.append({
+                'id': t.id, # KRİTİK DÜZELTME: Haritadaki Hata Bildir butonu için ID şart!
                 'name': t.name,
                 'lat': float(t.latitude),
                 'lng': float(t.longitude),
@@ -33,12 +32,10 @@ def toilet_data(request):
     return JsonResponse(data, safe=False)
 
 def report_toilet(request):
-    """Bot korumalı (Honeypot + Filtre) bildirim formu."""
+    """Bot korumalı YENİ TUVALET EKLEME formu."""
     if request.method == 'POST':
         # --- 1. SAVUNMA HATTI: HONEYPOT (BAL KÜPÜ) ---
-        # Eğer gizli 'website_url' alanı doluysa bu bir bottur.
         if request.POST.get('website_url'):
-            # Botu engelle ama başarı sayfasına gönder ki bot pes etmesin
             return render(request, 'success.html', {'mail_sent': True})
 
         form = ToiletReportForm(request.POST)
@@ -49,13 +46,49 @@ def report_toilet(request):
             spam_keywords = ['CEYDA', 'AFFET', 'PİŞMANIM']
             
             if any(word in name for word in spam_keywords):
-                # Spam ise kaydetmeden başarı sayfasına yönlendir
                 return render(request, 'success.html', {'mail_sent': True})
 
-            # Eğer her şey temizse veritabanına onaysız (False) olarak kaydet
             form.save() 
             return render(request, 'success.html', {'mail_sent': True})
     else:
         form = ToiletReportForm()
 
     return render(request, 'report.html', {'form': form})
+
+
+# --- YENİ: MEVCUT TUVALET İÇİN HATA/ŞİKAYET BİLDİRME SİSTEMİ ---
+def report_issue(request):
+    """Haritadaki mevcut bir tuvalet için hata bildirme sayfası."""
+    # URL'den gelen ?id=5 değerini alıyoruz
+    toilet_id = request.GET.get('id')
+    
+    # Eğer adam URL ile oynayıp id girmezse veya harf girerse ana sayfaya şutla
+    if not toilet_id or not toilet_id.isdigit():
+        return redirect('index')
+
+    # Veritabanında bu ID'ye sahip tuvalet var mı bak, yoksa 404 hatası ver
+    target_toilet = get_object_or_404(Toilet, id=toilet_id)
+
+    if request.method == 'POST':
+        # Botlara karşı aynı Honeypot tuzağını buraya da koyabiliriz
+        if request.POST.get('website_url'):
+            return render(request, 'success.html', {'mail_sent': True})
+
+        form = ToiletIssueForm(request.POST)
+        
+        if form.is_valid():
+            # Formu kaydetmeden önce durduruyoruz (commit=False)
+            # Çünkü bu şikayetin HANGİ tuvalete ait olduğunu form bilmiyor, biz ekleyeceğiz
+            issue = form.save(commit=False)
+            issue.toilet = target_toilet # URL'den bulduğumuz tuvaleti şikayete bağladık
+            issue.save() # Şimdi güvenle veritabanına yazabiliriz
+            
+            return render(request, 'success.html', {'mail_sent': True})
+    else:
+        form = ToiletIssueForm()
+
+    # Formu ve hangi tuvalet olduğunu HTML sayfasına gönderiyoruz
+    return render(request, 'toilet_report.html', {
+        'form': form,
+        'toilet': target_toilet
+    })

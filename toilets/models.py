@@ -85,3 +85,29 @@ class Toilet(models.Model):
         verbose_name = "Tuvalet"
         verbose_name_plural = "Tuvaletler"
         ordering = ['-created_at']
+
+
+# --- YENİ EKLENEN ŞİKAYET / HATA BİLDİRİM MODELİ ---
+class ToiletReport(models.Model):
+    ISSUE_CHOICES = [
+        ('kapali', 'Tuvalet Kapalı / Bulunamadı'),
+        ('ucretli', 'Ücretsiz Değil (Ücretli)'),
+        ('sifre_yanlis', 'Giriş Kodu / Şifre Yanlış'),
+        ('pis', 'Çok Kirli / Bakımsız'),
+        ('konum_yanlis', 'Haritadaki Konum Yanlış'),
+        ('diger', 'Diğer'),
+    ]
+
+    toilet = models.ForeignKey(Toilet, on_delete=models.CASCADE, related_name='reports', verbose_name="İlgili Tuvalet")
+    reason = models.CharField(max_length=50, choices=ISSUE_CHOICES, verbose_name="Şikayet Nedeni")
+    description = models.TextField(blank=True, null=True, verbose_name="Ek Açıklama (İsteğe Bağlı)")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Bildirim Tarihi")
+    is_resolved = models.BooleanField(default=False, verbose_name="Çözüldü mü?")
+
+    class Meta:
+        verbose_name = "Tuvalet Şikayeti"
+        verbose_name_plural = "Tuvalet Şikayetleri"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.get_reason_display()}] - {self.toilet.name}"

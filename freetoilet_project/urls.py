@@ -1,7 +1,9 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('toilets.urls')),
+    path('', views.index, name='index'),
+    path('api/toilets/', views.toilet_data, name='toilet_data'),
+    path('report/', views.report_toilet, name='report_toilet'), # Yeni tuvalet ekleme
+    path('report-issue/', views.report_issue, name='report_issue'), # YENİ: Haritadaki tuvaleti şikayet etme
 ]
