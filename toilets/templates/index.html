@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>freetoilets.org | Ücretsiz Tuvalet Bul</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -10,39 +10,71 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
     
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
-        #map { height: 100vh; width: 100%; }
-        
-        /* Popup Tasarımı */
-        .info-box { padding: 10px; min-width: 200px; }
-        .popup-title { margin: 0 0 10px 0; color: #2c3e50; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .price-tag { color: #e74c3c; font-weight: bold; }
-        .free-tag { color: #27ae60; font-weight: bold; }
-        .code-box { background: #f1f2f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; }
-        .report-link { display: block; margin-top: 10px; color: #e74c3c; text-decoration: none; font-size: 12px; font-weight: bold; text-align: center; border: 1px solid #ffdcdc; padding: 5px; border-radius: 5px; }
-        .report-link:hover { background: #fff0f0; }
-
-        #report-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-            z-index: 1000;
-            background-color: #2ecc71;
-            color: white;
-            padding: 14px 22px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
-            transition: transform 0.2s, background-color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        :root {
+            --primary: #007AFF; 
+            --success: #34C759; 
+            --danger: #FF3B30;  
+            --bg: #F2F2F7;
+            --text-dark: #1C1C1E;
+            --text-gray: #8E8E93;
+            --border-light: #E5E5EA;
         }
-        #report-btn:hover { background-color: #27ae60; transform: translateY(-3px); }
+
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text-dark); }
+        #map { height: 100vh; width: 100%; z-index: 1; }
+        
+        /* Modern Leaflet Popup Reset */
+        .leaflet-popup-content-wrapper { border-radius: 20px; padding: 0; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.15); }
+        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
+        .leaflet-popup-tip-container { display: none; } /* Alt ok işaretini kaldırdık, daha temiz duruyor */
+
+        /* Popup İçerik Tasarımı & Animasyonu */
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card { padding: 22px; animation: popupFadeIn 0.3s ease-out; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
+        .card-title { margin: 0; font-size: 18px; font-weight: 800; color: var(--text-dark); line-height: 1.3; }
+        
+        .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-free { background: #EAF9EE; color: var(--success); }
+        .badge-paid { background: #FFF0F0; color: var(--danger); }
+
+        .card-body { display: flex; flex-direction: column; gap: 12px; }
+        .info-row { display: flex; align-items: center; justify-content: space-between; font-size: 15px; background: #FAFAFC; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-light); }
+        .info-label { color: var(--text-gray); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        
+        .code-display { font-family: ui-monospace, SFMono-Regular, monospace; font-weight: 700; color: var(--primary); font-size: 16px; letter-spacing: 1px;}
+        .no-code { color: var(--text-gray); font-size: 13px; font-style: italic; font-weight: 500; }
+        
+        .desc-text { font-size: 14px; color: var(--text-gray); line-height: 1.5; margin-top: 4px; }
+
+        /* Ana Buton */
+        #report-btn {
+            position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; background-color: var(--text-dark); color: white;
+            padding: 16px 36px; border-radius: 40px; text-decoration: none;
+            font-size: 16px; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; align-items: center; gap: 10px;
+            white-space: nowrap; border: 2px solid rgba(255,255,255,0.1);
+        }
+        #report-btn:hover { background-color: var(--primary); transform: translateX(-50%) translateY(-5px); box-shadow: 0 15px 35px rgba(0,122,255,0.3); }
+
+        /* Özel Modern Cluster (Kümeleme) Görünümü */
+        .custom-cluster { background-color: rgba(0, 122, 255, 0.2); border-radius: 50%; }
+        .custom-cluster div { 
+            background-color: var(--primary); color: white; 
+            width: 32px; height: 32px; margin-left: 4px; margin-top: 4px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-weight: 800; font-size: 14px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.4); 
+        }
 
         @media (max-width: 600px) {
-            #report-btn { bottom: 20px; right: 10px; padding: 10px 18px; font-size: 14px; }
+            #report-btn { width: 85%; bottom: 25px; justify-content: center; font-size: 15px; }
+            .leaflet-popup-content { width: 250px !important; }
         }
     </style>
 </head>
@@ -51,77 +83,100 @@
 <div id="map"></div>
 
 <a id="report-btn" href="/report/">
-    <span>📍</span> Tuvalet Bildir
+    <span>📍</span> Yeni Tuvalet Ekle
 </a>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
-    // --- GÜVENLİK ZIRHI: XSS ENGELLEME FONKSİYONU ---
+    // --- GÜVENLİK ZIRHI: XSS ENGELLEME ---
     function escapeHTML(str) {
         if (!str) return "";
         return String(str).replace(/[&<>"']/g, function(m) {
-            return {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            }[m];
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
         });
     }
 
-    var map = L.map('map').setView([41.0082, 28.9784], 13);
+    // Daha temiz bir görünüm için zoom butonlarını kaldırdık (Mobil kullanıcılar zaten parmakla zoom yapıyor)
+    var map = L.map('map', { zoomControl: false }).setView([41.0082, 28.9784], 13);
+    L.control.zoom({ position: 'topright' }).addTo(map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    // Modern, açık renkli ve sade altlık harita (CartoDB Light)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors, © CARTO'
     }).addTo(map);
 
+    // Kendi tasarladığımız özel mavi kümeleme (Cluster) ikonları
     var markers = L.markerClusterGroup({
-        maxClusterRadius: 30,
+        maxClusterRadius: 45,
         disableClusteringAtZoom: 17,
-        spiderfyOnMaxZoom: true
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        iconCreateFunction: function(cluster) {
+            return L.divIcon({ 
+                html: '<div><span>' + cluster.getChildCount() + '</span></div>', 
+                className: 'custom-cluster', 
+                iconSize: L.point(40, 40) 
+            });
+        }
     });
-
-    
 
     fetch('/api/toilets/')
         .then(response => response.json())
         .then(data => {
             data.forEach(toilet => {
-                // VERİLERİ SÜZGEÇTEN GEÇİRİYORUZ
+                // VERİLER SÜZGEÇTEN GEÇİYOR
                 const safeName = escapeHTML(toilet.name);
-                const safeCode = escapeHTML(toilet.code || 'Yok / Gerekmiyor');
                 const safeDesc = escapeHTML(toilet.desc || '');
                 const safePrice = escapeHTML(toilet.price || '0');
+                
+                // Şifre mantığını daha akıllı hale getirdik
+                const rawCode = escapeHTML(toilet.code || '').trim();
+                const codeHtml = rawCode ? 
+                    `<span class="code-display">${rawCode}</span>` : 
+                    `<span class="no-code">Gerekmiyor / Yok</span>`;
 
-                var status = toilet.is_free ? 
-                    '<span class="free-tag">Ücretsiz</span>' : 
-                    `<span class="price-tag">Ücret: ${safePrice} TL</span>`;
+                const statusBadge = toilet.is_free ? 
+                    '<span class="badge badge-free">Ücretsiz</span>' : 
+                    `<span class="badge badge-paid">${safePrice} ₺</span>`;
 
-                var popupContent = `
-                    <div class="info-box">
-                        <h3 class="popup-title">${safeName}</h3>
-                        <p style="margin:5px 0;">${status}</p>
-                        <p style="margin:5px 0;"><b>Şifre:</b> <span class="code-box">${safeCode}</span></p>
-                        <p style="margin:5px 0; font-size: 0.9em; color: #555; font-style: italic;">"${safeDesc}"</p>
-                        <a href="/report-issue/?id=${toilet.id}" class="report-link">⚠️ Hata Bildir / Güncelle</a>
+                const popupContent = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">${safeName}</h3>
+                            ${statusBadge}
+                        </div>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <span class="info-label"><span>🔑</span> Giriş Kodu</span>
+                                ${codeHtml}
+                            </div>
+                            ${safeDesc ? `<div class="desc-text">${safeDesc}</div>` : ''}
+                        </div>
                     </div>
                 `;
 
-                var marker = L.marker([toilet.lat, toilet.lng]).bindPopup(popupContent);
+                var marker = L.marker([toilet.lat, toilet.lng]).bindPopup(popupContent, {
+                    autoPanPadding: [50, 50] // Popup açılınca haritayı ekranın ortasına yumuşakça kaydırır
+                });
                 markers.addLayer(marker);
             });
             map.addLayer(markers);
         })
-        .catch(err => console.error("Veri yüklenemedi:", err));
+        .catch(err => console.error("Veri hatası:", err));
 
-    // Konum Bulma
-    map.locate({setView: true, maxZoom: 16});
+    // Modern Kullanıcı Konumu İkonu
+    map.locate({setView: true, maxZoom: 15});
     map.on('locationfound', function(e) {
-        var radius = e.accuracy / 2;
-        L.circle(e.latlng, radius, {color: '#3498db', fillColor: '#3498db', fillOpacity: 0.2}).addTo(map).bindPopup("Şu an buradasınız").openPopup();
+        L.circle(e.latlng, e.accuracy / 2, {
+            color: '#007AFF', fillColor: '#007AFF', fillOpacity: 0.1, weight: 1
+        }).addTo(map);
+        
+        L.circleMarker(e.latlng, {
+            radius: 8, color: 'white', fillColor: '#007AFF', fillOpacity: 1, weight: 3,
+            boxShadow: '0 0 10px rgba(0,122,255,0.5)'
+        }).addTo(map).bindPopup("<div style='padding:5px; font-weight:bold;'>Şu an buradasınız 📍</div>");
     });
 </script>
 
