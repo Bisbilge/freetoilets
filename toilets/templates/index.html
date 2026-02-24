@@ -11,69 +11,83 @@
     
     <style>
         :root {
-            --primary: #007AFF; 
-            --success: #34C759; 
-            --danger: #FF3B30;  
-            --bg: #F2F2F7;
-            --text-dark: #1C1C1E;
-            --text-gray: #8E8E93;
-            --border-light: #E5E5EA;
+            /* Capcanlı, yüksek enerjili düz renkler */
+            --primary: #FF4757;    /* Canlı Kırmızı/Pembe */
+            --secondary: #1E90FF;  /* Parlak Mavi */
+            --success: #2ED573;    /* Fosforlu Yeşil */
+            --warning: #FFA502;    /* Enerjik Turuncu */
+            --dark: #2F3542;       /* Koyu Lacivert/Gri (Siyah yerine) */
+            --bg-light: #F1F2F6;
         }
 
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text-dark); }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--dark); }
         #map { height: 100vh; width: 100%; z-index: 1; }
         
-        /* Modern Leaflet Popup Reset */
-        .leaflet-popup-content-wrapper { border-radius: 20px; padding: 0; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.15); }
-        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
-        .leaflet-popup-tip-container { display: none; } /* Alt ok işaretini kaldırdık, daha temiz duruyor */
-
-        /* Popup İçerik Tasarımı & Animasyonu */
-        @keyframes popupFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Harita üzerindeki pop-up'ı canlandıralım (Neobrutalizm esintileri) */
+        .leaflet-popup-content-wrapper { 
+            border-radius: 16px; 
+            padding: 0; 
+            overflow: hidden; 
+            border: 3px solid var(--dark); /* Kalın, belirgin çerçeve */
+            box-shadow: 6px 6px 0px rgba(47, 53, 66, 0.2); /* 3D pop-out efekti */
         }
-        
-        .card { padding: 22px; animation: popupFadeIn 0.3s ease-out; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
-        .card-title { margin: 0; font-size: 18px; font-weight: 800; color: var(--text-dark); line-height: 1.3; }
-        
-        .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-        .badge-free { background: #EAF9EE; color: var(--success); }
-        .badge-paid { background: #FFF0F0; color: var(--danger); }
+        .leaflet-popup-content { margin: 0 !important; width: 260px !important; }
+        .leaflet-popup-tip { border-top: 3px solid var(--dark); border-left: 3px solid var(--dark); }
 
-        .card-body { display: flex; flex-direction: column; gap: 12px; }
-        .info-row { display: flex; align-items: center; justify-content: space-between; font-size: 15px; background: #FAFAFC; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-light); }
-        .info-label { color: var(--text-gray); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .card { padding: 0; }
         
-        .code-display { font-family: ui-monospace, SFMono-Regular, monospace; font-weight: 700; color: var(--primary); font-size: 16px; letter-spacing: 1px;}
-        .no-code { color: var(--text-gray); font-size: 13px; font-style: italic; font-weight: 500; }
+        /* Renkli ve dikkat çekici başlık alanı */
+        .card-header { 
+            background-color: var(--warning); 
+            padding: 16px; 
+            border-bottom: 3px solid var(--dark);
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+        }
+        .card-title { margin: 0; font-size: 19px; font-weight: 900; color: var(--dark); line-height: 1.2; flex: 1; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .desc-text { font-size: 14px; color: var(--text-gray); line-height: 1.5; margin-top: 4px; }
+        .badge { font-size: 12px; font-weight: 900; padding: 6px 10px; border-radius: 8px; border: 2px solid var(--dark); background: white; white-space: nowrap; box-shadow: 2px 2px 0px var(--dark); }
+        .badge-free { color: var(--dark); background-color: var(--success); }
+        .badge-paid { color: white; background-color: var(--primary); }
 
-        /* Ana Buton */
+        .card-body { padding: 16px; background-color: white; }
+        
+        .info-row { display: flex; align-items: center; justify-content: space-between; font-size: 15px; margin-bottom: 12px; background: var(--bg-light); padding: 10px; border-radius: 8px; border: 2px dashed #CED6E0; }
+        .info-label { color: var(--dark); font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+        
+        .code-display { font-family: 'Courier New', Courier, monospace; font-weight: 900; color: white; background-color: var(--secondary); padding: 6px 12px; border-radius: 6px; font-size: 16px; border: 2px solid var(--dark); box-shadow: 2px 2px 0px var(--dark); }
+        .no-code { color: #747D8C; font-size: 14px; font-weight: bold; }
+        
+        .desc-text { font-size: 14px; color: var(--dark); line-height: 1.6; font-weight: 500; background: #FFFDF2; padding: 10px; border-left: 4px solid var(--warning); margin-top: 8px; }
+
+        /* Zıp Zıp, Enerjik Ana Buton */
         #report-btn {
             position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; background-color: var(--text-dark); color: white;
-            padding: 16px 36px; border-radius: 40px; text-decoration: none;
-            font-size: 16px; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1000; background-color: var(--primary); color: white;
+            padding: 16px 36px; border-radius: 14px; text-decoration: none;
+            font-size: 18px; font-weight: 900; letter-spacing: 1px;
+            border: 3px solid var(--dark);
+            box-shadow: 6px 6px 0px var(--dark); /* Kalın, oyuncaklı gölge */
+            transition: all 0.15s ease-in-out;
             display: flex; align-items: center; gap: 10px;
-            white-space: nowrap; border: 2px solid rgba(255,255,255,0.1);
+            white-space: nowrap; text-transform: uppercase;
         }
-        #report-btn:hover { background-color: var(--primary); transform: translateX(-50%) translateY(-5px); box-shadow: 0 15px 35px rgba(0,122,255,0.3); }
+        #report-btn:hover { 
+            transform: translateX(-50%) translateY(4px); 
+            box-shadow: 2px 2px 0px var(--dark); /* Basılma hissi */
+            background-color: #ff3344;
+        }
 
-        /* Özel Modern Cluster (Kümeleme) Görünümü */
-        .custom-cluster { background-color: rgba(0, 122, 255, 0.2); border-radius: 50%; }
+        /* Fosforlu ve Canlı Kümeleme (Cluster) İkonları */
+        .custom-cluster { background-color: rgba(46, 213, 115, 0.3); border-radius: 50%; border: 2px dashed var(--dark); }
         .custom-cluster div { 
-            background-color: var(--primary); color: white; 
-            width: 32px; height: 32px; margin-left: 4px; margin-top: 4px; 
+            background-color: var(--success); color: var(--dark); 
+            width: 36px; height: 36px; margin-left: 2px; margin-top: 2px; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-weight: 800; font-size: 14px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.4); 
+            font-weight: 900; font-size: 16px; border: 2px solid var(--dark);
         }
 
         @media (max-width: 600px) {
-            #report-btn { width: 85%; bottom: 25px; justify-content: center; font-size: 15px; }
+            #report-btn { width: 80%; bottom: 25px; padding: 14px 20px; font-size: 16px; }
             .leaflet-popup-content { width: 250px !important; }
         }
     </style>
@@ -83,14 +97,14 @@
 <div id="map"></div>
 
 <a id="report-btn" href="/report/">
-    <span>📍</span> Yeni Tuvalet Ekle
+    <span style="font-size: 22px;">📍</span> Yeni Tuvalet Ekle
 </a>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
-    // --- GÜVENLİK ZIRHI: XSS ENGELLEME ---
+    // --- GÜVENLİK ZIRHI: XSS ENGELLEME (Asla dokunmuyoruz) ---
     function escapeHTML(str) {
         if (!str) return "";
         return String(str).replace(/[&<>"']/g, function(m) {
@@ -98,16 +112,15 @@
         });
     }
 
-    // Daha temiz bir görünüm için zoom butonlarını kaldırdık (Mobil kullanıcılar zaten parmakla zoom yapıyor)
     var map = L.map('map', { zoomControl: false }).setView([41.0082, 28.9784], 13);
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Modern, açık renkli ve sade altlık harita (CartoDB Light)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors, © CARTO'
+    // Orijinal, renkli, sokakları ve yeşillikleri belli olan OpenStreetMap altlığını geri getirdik
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Kendi tasarladığımız özel mavi kümeleme (Cluster) ikonları
+    // Kümeleri patlayan, fosforlu renklere çevirdik
     var markers = L.markerClusterGroup({
         maxClusterRadius: 45,
         disableClusteringAtZoom: 17,
@@ -117,7 +130,7 @@
             return L.divIcon({ 
                 html: '<div><span>' + cluster.getChildCount() + '</span></div>', 
                 className: 'custom-cluster', 
-                iconSize: L.point(40, 40) 
+                iconSize: L.point(44, 44) 
             });
         }
     });
@@ -126,19 +139,17 @@
         .then(response => response.json())
         .then(data => {
             data.forEach(toilet => {
-                // VERİLER SÜZGEÇTEN GEÇİYOR
                 const safeName = escapeHTML(toilet.name);
                 const safeDesc = escapeHTML(toilet.desc || '');
                 const safePrice = escapeHTML(toilet.price || '0');
                 
-                // Şifre mantığını daha akıllı hale getirdik
                 const rawCode = escapeHTML(toilet.code || '').trim();
                 const codeHtml = rawCode ? 
                     `<span class="code-display">${rawCode}</span>` : 
-                    `<span class="no-code">Gerekmiyor / Yok</span>`;
+                    `<span class="no-code">Gerekmiyor</span>`;
 
                 const statusBadge = toilet.is_free ? 
-                    '<span class="badge badge-free">Ücretsiz</span>' : 
+                    '<span class="badge badge-free">ÜCRETSİZ</span>' : 
                     `<span class="badge badge-paid">${safePrice} ₺</span>`;
 
                 const popupContent = `
@@ -149,7 +160,7 @@
                         </div>
                         <div class="card-body">
                             <div class="info-row">
-                                <span class="info-label"><span>🔑</span> Giriş Kodu</span>
+                                <span class="info-label"><span>🔑</span> ŞİFRE</span>
                                 ${codeHtml}
                             </div>
                             ${safeDesc ? `<div class="desc-text">${safeDesc}</div>` : ''}
@@ -158,7 +169,7 @@
                 `;
 
                 var marker = L.marker([toilet.lat, toilet.lng]).bindPopup(popupContent, {
-                    autoPanPadding: [50, 50] // Popup açılınca haritayı ekranın ortasına yumuşakça kaydırır
+                    autoPanPadding: [50, 50]
                 });
                 markers.addLayer(marker);
             });
@@ -166,17 +177,16 @@
         })
         .catch(err => console.error("Veri hatası:", err));
 
-    // Modern Kullanıcı Konumu İkonu
+    // Canlı konum işaretini parlak ve dikkat çekici yaptık
     map.locate({setView: true, maxZoom: 15});
     map.on('locationfound', function(e) {
         L.circle(e.latlng, e.accuracy / 2, {
-            color: '#007AFF', fillColor: '#007AFF', fillOpacity: 0.1, weight: 1
+            color: '#FF4757', fillColor: '#FF4757', fillOpacity: 0.2, weight: 2
         }).addTo(map);
         
         L.circleMarker(e.latlng, {
-            radius: 8, color: 'white', fillColor: '#007AFF', fillOpacity: 1, weight: 3,
-            boxShadow: '0 0 10px rgba(0,122,255,0.5)'
-        }).addTo(map).bindPopup("<div style='padding:5px; font-weight:bold;'>Şu an buradasınız 📍</div>");
+            radius: 10, color: '#2F3542', fillColor: '#1E90FF', fillOpacity: 1, weight: 3
+        }).addTo(map).bindPopup("<div style='padding:8px; font-weight:900; font-size: 15px;'>📍 BURADASIN!</div>");
     });
 </script>
 
