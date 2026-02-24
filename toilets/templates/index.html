@@ -6,17 +6,22 @@
     <title>FreeToilet.org | Ücretsiz Tuvalet Bul</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
     
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
         #map { height: 100vh; width: 100%; }
-        .info-box { padding: 10px; min-width: 150px; }
+        
+        /* Popup Tasarımı */
+        .info-box { padding: 10px; min-width: 200px; }
+        .popup-title { margin: 0 0 10px 0; color: #2c3e50; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .price-tag { color: #e74c3c; font-weight: bold; }
         .free-tag { color: #27ae60; font-weight: bold; }
-        
+        .code-box { background: #f1f2f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; }
+        .report-link { display: block; margin-top: 10px; color: #e74c3c; text-decoration: none; font-size: 12px; font-weight: bold; text-align: center; border: 1px solid #ffdcdc; padding: 5px; border-radius: 5px; }
+        .report-link:hover { background: #fff0f0; }
+
         #report-btn {
             position: fixed;
             bottom: 30px;
@@ -28,25 +33,16 @@
             border-radius: 50px;
             text-decoration: none;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
             transition: transform 0.2s, background-color 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
-        #report-btn:hover {
-            background-color: #27ae60;
-            transform: scale(1.05);
-        }
+        #report-btn:hover { background-color: #27ae60; transform: translateY(-3px); }
 
         @media (max-width: 600px) {
-            #report-btn {
-                bottom: 20px;
-                right: 10px;
-                padding: 10px 18px;
-                font-size: 14px;
-            }
+            #report-btn { bottom: 20px; right: 10px; padding: 10px 18px; font-size: 14px; }
         }
     </style>
 </head>
@@ -62,53 +58,71 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
+    // --- GÜVENLİK ZIRHI: XSS ENGELLEME FONKSİYONU ---
+    function escapeHTML(str) {
+        if (!str) return "";
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m];
+        });
+    }
+
     var map = L.map('map').setView([41.0082, 28.9784], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // KÜMELEME AYARLARI GÜNCELLENDİ
     var markers = L.markerClusterGroup({
-        maxClusterRadius: 30, // Baloncukların birbirini yutma mesafesini azalttık (Varsayılan 80'di)
-        disableClusteringAtZoom: 17, // 17 zoom seviyesine gelince kümelemeyi tamamen iptal et, tekil göster
-        spiderfyOnMaxZoom: true // Aynı noktadaki markerları bacak gibi açar
+        maxClusterRadius: 30,
+        disableClusteringAtZoom: 17,
+        spiderfyOnMaxZoom: true
     });
+
+    
 
     fetch('/api/toilets/')
         .then(response => response.json())
         .then(data => {
             data.forEach(toilet => {
+                // VERİLERİ SÜZGEÇTEN GEÇİRİYORUZ
+                const safeName = escapeHTML(toilet.name);
+                const safeCode = escapeHTML(toilet.code || 'Yok / Gerekmiyor');
+                const safeDesc = escapeHTML(toilet.desc || '');
+                const safePrice = escapeHTML(toilet.price || '0');
+
                 var status = toilet.is_free ? 
                     '<span class="free-tag">Ücretsiz</span>' : 
-                    `<span class="price-tag">Ücret: ${toilet.price} TL</span>`;
+                    `<span class="price-tag">Ücret: ${safePrice} TL</span>`;
 
                 var popupContent = `
                     <div class="info-box">
-                        <h3 style="margin:0 0 10px 0;">${toilet.name}</h3>
+                        <h3 class="popup-title">${safeName}</h3>
                         <p style="margin:5px 0;">${status}</p>
-                        <p style="margin:5px 0;"><b>Şifre:</b> <code>${toilet.code || 'Yok'}</code></p>
-                        <p style="margin:5px 0; font-size: 0.9em; color: #555;">${toilet.desc || ''}</p>
+                        <p style="margin:5px 0;"><b>Şifre:</b> <span class="code-box">${safeCode}</span></p>
+                        <p style="margin:5px 0; font-size: 0.9em; color: #555; font-style: italic;">"${safeDesc}"</p>
+                        <a href="/report-issue/?id=${toilet.id}" class="report-link">⚠️ Hata Bildir / Güncelle</a>
                     </div>
                 `;
 
-                var marker = L.marker([toilet.lat, toilet.lng])
-                    .bindPopup(popupContent);
-                
+                var marker = L.marker([toilet.lat, toilet.lng]).bindPopup(popupContent);
                 markers.addLayer(marker);
             });
-            
             map.addLayer(markers);
         })
         .catch(err => console.error("Veri yüklenemedi:", err));
 
+    // Konum Bulma
     map.locate({setView: true, maxZoom: 16});
-
-    function onLocationFound(e) {
+    map.on('locationfound', function(e) {
         var radius = e.accuracy / 2;
-        L.circle(e.latlng, radius).addTo(map).bindPopup("Şu an buradasınız").openPopup();
-    }
-    map.on('locationfound', onLocationFound);
+        L.circle(e.latlng, radius, {color: '#3498db', fillColor: '#3498db', fillOpacity: 0.2}).addTo(map).bindPopup("Şu an buradasınız").openPopup();
+    });
 </script>
 
 </body>
