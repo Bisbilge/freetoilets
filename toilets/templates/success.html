@@ -2,39 +2,121 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Başarılı! | FreeToilet.org</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>İşlem Tamam! | freetoilets.org</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-        .success-card { background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; }
-        .icon { font-size: 4rem; color: #2ecc71; margin-bottom: 1rem; }
-        h1 { color: #2c3e50; margin-bottom: 1rem; }
-        
-        /* Mesaj Stilleri */
-        .messages { list-style: none; padding: 0; margin-bottom: 2rem; }
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; line-height: 1.4; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        
-        a { background: #3498db; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s; }
-        a:hover { background: #2980b9; }
+        :root {
+            --primary: #FF4757;
+            --secondary: #1E90FF;
+            --success: #2ED573;
+            --warning: #FFA502;
+            --dark: #2F3542;
+            --bg-light: #F1F2F6;
+        }
+
+        body { 
+            margin: 0; padding: 20px; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-light); 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; text-align: center;
+        }
+
+        .success-card { 
+            background: white; 
+            padding: 3rem; 
+            border-radius: 20px; 
+            border: 4px solid var(--dark);
+            box-shadow: 10px 10px 0px var(--dark);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        /* Durum ikonları için neobrutalist kutu */
+        .icon-box {
+            font-size: 4rem;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            margin: 0 auto 1.5rem;
+            background: white;
+            border: 4px solid var(--dark);
+            border-radius: 20px;
+            box-shadow: 6px 6px 0px var(--dark);
+        }
+
+        h1 { 
+            color: var(--dark); 
+            margin-bottom: 1.5rem; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            font-size: 26px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .limit-info {
+            font-size: 0.9rem;
+            color: #747D8C;
+            background: #F1F2F6;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px dashed var(--dark);
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        a { 
+            display: inline-block;
+            background: var(--secondary); 
+            color: white; 
+            padding: 15px 30px; 
+            border-radius: 14px; 
+            text-decoration: none; 
+            font-weight: 900; 
+            font-size: 18px;
+            text-transform: uppercase;
+            border: 3px solid var(--dark);
+            box-shadow: 5px 5px 0px var(--dark);
+            transition: all 0.15s ease-in-out; 
+        }
+
+        a:hover { 
+            transform: translateY(4px) translateX(4px);
+            box-shadow: 0px 0px 0px var(--dark);
+            background-color: #1a7fe3;
+        }
+
+        /* Renk varyasyonları */
+        .success-theme { background-color: var(--success); }
+        .warning-theme { background-color: var(--warning); }
+
     </style>
 </head>
 <body>
     <div class="success-card">
         {% if mail_sent %}
-            <div class="icon">✅</div>
+            <div class="icon-box success-theme">✅</div>
             <h1>Bildirim Alındı!</h1>
-            <p>Katkın için teşekkürler. Kontrollerden sonra haritaya eklenecektir.</p>
+            <p>Harika! Katkın için çok teşekkürler. Bildirimin kontrollerden sonra haritaya eklenecektir.</p>
         {% else %}
-            <div class="icon" style="color: #f1c40f;">⚠️</div>
-            <h1>Günlük Limit Doldu</h1>
-            <p>Yoğun ilgiden dolayı günlük bildirim limitimize ulaştık. Şu an bildirim kabul edemiyoruz, lütfen yarın tekrar deneyin.</p>
-            <p style="font-size: 0.8rem; color: #7f8c8d;">(Veriniz sisteme kaydedilemedi, anlayışınız için teşekkürler.)</p>
+            <div class="icon-box warning-theme">⚠️</div>
+            <h1>Limit Doldu</h1>
+            <p>Yoğun ilgiden dolayı günlük bildirim limitimize ulaştık. Şu an bildirim kabul edemiyoruz.</p>
+            <div class="limit-info">
+                Veriniz sisteme kaydedilemedi, lütfen yarın tekrar deneyin.
+            </div>
         {% endif %}
         
-        <br><br>
-        <a href="/">Haritaya Dön</a>
-</div>
+        <br>
+        <a href="/">← Haritaya Dön</a>
+    </div>
 </body>
 </html>

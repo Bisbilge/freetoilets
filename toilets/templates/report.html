@@ -2,129 +2,121 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeni Tuvalet Bildir | FreeToilet.org</title>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>İşlem Tamam! | freetoilets.org</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; color: #2c3e50; line-height: 1.6; }
-        .container { max-width: 600px; margin: 3rem auto; background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h1 { text-align: center; margin-bottom: 2rem; color: #3498db; }
-        
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
-        
-        input[type="text"], input[type="url"], input[type="number"], textarea {
-            width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.2s;
-        }
-        input:focus, textarea:focus { border-color: #3498db; outline: none; background-color: #fff; box-shadow: 0 0 8px rgba(52, 152, 219, 0.1); }
-        
-        .help-text { font-size: 0.85rem; color: #7f8c8d; margin-top: 5px; }
-        
-        .btn-submit {
-            width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 1rem;
-        }
-        .btn-submit:hover { background: #2980b9; transform: translateY(-2px); }
-        
-        .checkbox-group { 
-            display: flex; align-items: center; gap: 10px; background: #f1f9ff; padding: 12px; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #d6eaf8;
+        :root {
+            --primary: #FF4757;
+            --secondary: #1E90FF;
+            --success: #2ED573;
+            --warning: #FFA502;
+            --dark: #2F3542;
+            --bg-light: #F1F2F6;
         }
 
-        #price-section { 
-            display: none; 
-            border-left: 4px solid #3498db; 
-            padding-left: 15px; 
-            background: #fcfcfc;
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-        
-        .code-section {
-            border-left: 4px solid #e67e22;
-            padding-left: 15px;
-            margin-top: 1.5rem;
+        body { 
+            margin: 0; padding: 20px; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-light); 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; text-align: center;
         }
 
-        .captcha-container {
-            margin: 2rem 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .success-card { 
+            background: white; 
+            padding: 3rem; 
+            border-radius: 20px; 
+            border: 4px solid var(--dark);
+            box-shadow: 10px 10px 0px var(--dark);
+            max-width: 450px;
+            width: 100%;
         }
-        
-        .error-list { color: #e74c3c; font-size: 0.85rem; list-style: none; padding: 0; margin-top: 5px; }
+
+        /* Durum ikonları için neobrutalist kutu */
+        .icon-box {
+            font-size: 4rem;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            margin: 0 auto 1.5rem;
+            background: white;
+            border: 4px solid var(--dark);
+            border-radius: 20px;
+            box-shadow: 6px 6px 0px var(--dark);
+        }
+
+        h1 { 
+            color: var(--dark); 
+            margin-bottom: 1.5rem; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            font-size: 26px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .limit-info {
+            font-size: 0.9rem;
+            color: #747D8C;
+            background: #F1F2F6;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px dashed var(--dark);
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        a { 
+            display: inline-block;
+            background: var(--secondary); 
+            color: white; 
+            padding: 15px 30px; 
+            border-radius: 14px; 
+            text-decoration: none; 
+            font-weight: 900; 
+            font-size: 18px;
+            text-transform: uppercase;
+            border: 3px solid var(--dark);
+            box-shadow: 5px 5px 0px var(--dark);
+            transition: all 0.15s ease-in-out; 
+        }
+
+        a:hover { 
+            transform: translateY(4px) translateX(4px);
+            box-shadow: 0px 0px 0px var(--dark);
+            background-color: #1a7fe3;
+        }
+
+        /* Renk varyasyonları */
+        .success-theme { background-color: var(--success); }
+        .warning-theme { background-color: var(--warning); }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚽 Yeni Tuvalet Bildir</h1>
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="id_name">Mekan Adı</label>
-                {{ form.name }}
-                <p class="help-text">Örn: Beşiktaş Starbucks, Kadıköy Metro Girişi...</p>
+    <div class="success-card">
+        {% if mail_sent %}
+            <div class="icon-box success-theme">✅</div>
+            <h1>Bildirim Alındı!</h1>
+            <p>Harika! Katkın için çok teşekkürler. Bildirimin kontrollerden sonra haritaya eklenecektir.</p>
+        {% else %}
+            <div class="icon-box warning-theme">⚠️</div>
+            <h1>Limit Doldu</h1>
+            <p>Yoğun ilgiden dolayı günlük bildirim limitimize ulaştık. Şu an bildirim kabul edemiyoruz.</p>
+            <div class="limit-info">
+                Veriniz sisteme kaydedilemedi, lütfen yarın tekrar deneyin.
             </div>
-
-            <div class="form-group">
-                <label for="id_maps_url">Google Maps Linki (Zorunlu)</label>
-                {{ form.maps_url }}
-                <p class="help-text">Haritalar'da konumu "Paylaş" diyerek aldığınız linki yapıştırın.</p>
-            </div>
-
-            <div class="form-group checkbox-group">
-                {{ form.is_free }}
-                <label for="id_is_free" style="margin: 0; cursor: pointer;">Bu tuvalet ücretsiz mi?</label>
-            </div>
-
-            <div class="form-group" id="price-section">
-                <label for="id_price">Kullanım Ücreti (₺)</label>
-                {{ form.price }}
-                <p class="help-text">Yaklaşık tutarı rakam olarak giriniz.</p>
-            </div>
-
-            <div class="form-group code-section">
-                <label for="id_code">Giriş Kodu / Şifre (Varsa)</label>
-                {{ form.code }}
-                <p class="help-text">Kapı kilitliyse veya fiş üzerinde şifre varsa buraya yazın.</p>
-            </div>
-
-            <div class="form-group">
-                <label for="id_description">Ek Bilgiler</label>
-                {{ form.description }}
-                <p class="help-text">Temizlik durumu, tam yer tarifi vb.</p>
-            </div>
-
-            <div class="captcha-container">
-                {{ form.captcha }}
-                {% if form.captcha.errors %}
-                    <ul class="error-list">
-                        {% for error in form.captcha.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-
-            <button type="submit" class="btn-submit">Bildirimi Gönder</button>
-        </form>
+        {% endif %}
+        
+        <br>
+        <a href="/">← Haritaya Dön</a>
     </div>
-
-    <script>
-        const isFreeCheckbox = document.querySelector('#id_is_free');
-        const priceSection = document.querySelector('#price-section');
-
-        function togglePrice() {
-            if (!isFreeCheckbox.checked) {
-                priceSection.style.display = 'block';
-            } else {
-                priceSection.style.display = 'none';
-            }
-        }
-
-        isFreeCheckbox.addEventListener('change', togglePrice);
-        window.addEventListener('load', togglePrice);
-    </script>
 </body>
 </html>
