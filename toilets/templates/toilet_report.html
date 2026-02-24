@@ -7,19 +7,20 @@
     
     <style>
         :root {
-            var(--primary): #FF4757;
-            var(--secondary): #1E90FF;
-            var(--success): #2ED573;
-            var(--warning): #FFA502;
-            var(--dark): #2F3542;
-            var(--bg-light): #F1F2F6;
+            /* var() kaldırıldı, değişkenler doğru şekilde tanımlandı */
+            --primary: #FF4757;
+            --secondary: #1E90FF;
+            --success: #2ED573;
+            --warning: #FFA502;
+            --dark: #2F3542;
+            --bg-light: #F1F2F6;
         }
 
         body { 
             margin: 0; padding: 20px; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #F1F2F6; 
-            color: #2F3542; 
+            background-color: var(--bg-light); /* Değişkenleri de sisteme bağladık */
+            color: var(--dark); 
             display: flex; justify-content: center; align-items: center; 
             min-height: 100vh;
         }
@@ -28,16 +29,16 @@
             background-color: white;
             width: 100%; max-width: 500px;
             border-radius: 16px;
-            border: 4px solid #2F3542;
-            box-shadow: 8px 8px 0px #2F3542;
+            border: 4px solid var(--dark);
+            box-shadow: 8px 8px 0px var(--dark);
             overflow: hidden;
         }
 
         .header {
-            background-color: #FF4757;
+            background-color: var(--primary);
             color: white;
             padding: 20px;
-            border-bottom: 4px solid #2F3542;
+            border-bottom: 4px solid var(--dark);
             text-align: center;
         }
 
@@ -49,31 +50,31 @@
         .form-group { margin-bottom: 20px; }
         .form-group label {
             display: block; font-weight: 900; margin-bottom: 8px;
-            font-size: 15px; color: #2F3542; text-transform: uppercase;
+            font-size: 15px; color: var(--dark); text-transform: uppercase;
         }
 
         /* Honeypot (Bal Küpü) gizleme */
         .honeypot { display: none !important; }
 
         .submit-btn {
-            width: 100%; background-color: #2ED573; color: #2F3542;
-            padding: 16px; border-radius: 12px; border: 4px solid #2F3542;
+            width: 100%; background-color: var(--success); color: var(--dark);
+            padding: 16px; border-radius: 12px; border: 4px solid var(--dark);
             font-size: 18px; font-weight: 900; text-transform: uppercase;
-            box-shadow: 4px 4px 0px #2F3542; cursor: pointer;
+            box-shadow: 4px 4px 0px var(--dark); cursor: pointer;
             transition: all 0.15s ease-in-out; margin-top: 10px;
         }
         .submit-btn:hover {
             transform: translateY(4px) translateX(4px);
-            box-shadow: 0px 0px 0px #2F3542;
+            box-shadow: 0px 0px 0px var(--dark);
             background-color: #26de71;
         }
 
         .back-link {
             display: block; text-align: center; margin-top: 20px;
-            color: #1E90FF; font-weight: 900; text-decoration: none;
+            color: var(--secondary); font-weight: 900; text-decoration: none;
             font-size: 15px; text-transform: uppercase;
         }
-        .back-link:hover { text-decoration: underline; color: #2F3542; }
+        .back-link:hover { text-decoration: underline; color: var(--dark); }
 
     </style>
 </head>
