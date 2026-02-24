@@ -39,27 +39,35 @@ class ToiletAdmin(SimpleHistoryAdmin):
 
 @admin.register(ToiletReport)
 class ToiletReportAdmin(admin.ModelAdmin):
-    # Admin panelinde görünecek sütunlar: İlgili tuvalet linki ve şikayet nedeni eklendi
-    list_display = ('id', 'toilet_link', 'reason', 'is_resolved', 'created_at')
+    # 1. LİSTE GÖRÜNÜMÜ: Artık tıklayınca doğrudan şikayet detayına gidecek
+    list_display = ('id', 'toilet', 'reason', 'is_resolved', 'created_at')
     
-    # Sağ taraftaki filtreleme menüsü
+    # 'id' ve 'toilet' sütunlarını tıklanabilir yapıyoruz (Şikayet detayını açar)
+    list_display_links = ('id', 'toilet') 
+    
     list_filter = ('reason', 'is_resolved', 'created_at')
-    
-    # Arama çubuğunda neye göre arama yapılacak
     search_fields = ('description', 'toilet__name')
-    
     actions = ['mark_as_resolved']
 
-    # 1. İstediğin özellik: Tek tıkla ilgili tuvaletin düzenleme sayfasına gitme
-    def toilet_link(self, obj):
-        if obj.toilet:
-            # ÖNEMLİ: 'toilets' kısmı uygulamanın (app) adıdır. Uygulamanın adı farklıysa burayı güncelle.
-            url = reverse('admin:toilets_toilet_change', args=[obj.toilet.id])
-            return format_html('<a href="{}" style="font-weight:bold; color:#1E90FF; text-decoration:underline;">{} (Düzenle)</a>', url, obj.toilet.name)
-        return "-"
-    toilet_link.short_description = 'İlgili Tuvalet'
+    # 2. DETAY SAYFASI: Sadece şikayet detayına girildiğinde görünecek özel link alanı
+    readonly_fields = ('related_toilet_link', 'created_at')
 
-    # 2. Ekstra özellik: Şikayetleri topluca "Çözüldü" olarak işaretleme aksiyonu
+    def related_toilet_link(self, obj):
+        if obj.id and obj.toilet:
+            # Tuvaletin düzenleme sayfasına giden URL'yi oluşturuyoruz
+            url = reverse('admin:toilets_toilet_change', args=[obj.toilet.id])
+            # Admin paneline yakışacak şık, mavi bir buton tasarımı
+            return format_html(
+                '<a href="{}" style="background-color: #1E90FF; color: white; padding: 6px 12px; '
+                'border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 13px;">'
+                '🚀 {} Tuvaletini Düzenle'
+                '</a>', 
+                url, obj.toilet.name
+            )
+        return "-"
+    
+    related_toilet_link.short_description = 'Hızlı İşlem'
+
     @admin.action(description='Seçili şikayetleri "Çözüldü" olarak işaretle')
     def mark_as_resolved(self, request, queryset):
         queryset.update(is_resolved=True)
