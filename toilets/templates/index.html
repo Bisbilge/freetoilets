@@ -11,32 +11,58 @@
     
     <style>
         :root {
-            /* Capcanlı, yüksek enerjili düz renkler */
-            --primary: #FF4757;    /* Canlı Kırmızı/Pembe */
-            --secondary: #1E90FF;  /* Parlak Mavi */
-            --success: #2ED573;    /* Fosforlu Yeşil */
-            --warning: #FFA502;    /* Enerjik Turuncu */
-            --dark: #2F3542;       /* Koyu Lacivert/Gri (Siyah yerine) */
+            --primary: #FF4757;    
+            --secondary: #1E90FF;  
+            --success: #2ED573;    
+            --warning: #FFA502;    
+            --dark: #2F3542;       
             --bg-light: #F1F2F6;
         }
 
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--dark); }
+        
+        /* Yeni Taşıma Banner'ı */
+        #move-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--warning);
+            color: var(--dark);
+            z-index: 2000;
+            text-align: center;
+            padding: 14px 10px;
+            font-weight: 900;
+            text-decoration: none;
+            border-bottom: 4px solid var(--dark);
+            text-transform: uppercase;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+        #move-banner:hover {
+            background-color: var(--success);
+        }
+        #move-banner .arrow { font-size: 20px; }
+
         #map { height: 100vh; width: 100%; z-index: 1; }
         
-        /* Harita üzerindeki pop-up'ı canlandıralım (Neobrutalizm esintileri) */
         .leaflet-popup-content-wrapper { 
             border-radius: 16px; 
             padding: 0; 
             overflow: hidden; 
-            border: 3px solid var(--dark); /* Kalın, belirgin çerçeve */
-            box-shadow: 6px 6px 0px rgba(47, 53, 66, 0.2); /* 3D pop-out efekti */
+            border: 3px solid var(--dark); 
+            box-shadow: 6px 6px 0px rgba(47, 53, 66, 0.2); 
         }
         .leaflet-popup-content { margin: 0 !important; width: 260px !important; }
         .leaflet-popup-tip { border-top: 3px solid var(--dark); border-left: 3px solid var(--dark); }
 
         .card { padding: 0; }
         
-        /* Renkli ve dikkat çekici başlık alanı */
         .card-header { 
             background-color: var(--warning); 
             padding: 16px; 
@@ -59,7 +85,6 @@
         
         .desc-text { font-size: 14px; color: var(--dark); line-height: 1.6; font-weight: 500; background: #FFFDF2; padding: 10px; border-left: 4px solid var(--warning); margin-top: 8px; }
 
-        /* Pop-up İçi Hata Bildir Butonu */
         .popup-report-btn {
             display: block;
             background-color: var(--dark);
@@ -74,12 +99,8 @@
             border-top: 3px solid var(--dark);
             transition: background 0.2s ease;
         }
-        .popup-report-btn:hover {
-            background-color: var(--primary);
-            color: white;
-        }
+        .popup-report-btn:hover { background-color: var(--primary); }
 
-        /* Zıp Zıp, Enerjik Ana Buton */
         #report-btn {
             position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%);
             z-index: 1000; background-color: var(--primary); color: white;
@@ -94,10 +115,8 @@
         #report-btn:hover { 
             transform: translateX(-50%) translateY(4px); 
             box-shadow: 2px 2px 0px var(--dark); 
-            background-color: #ff3344;
         }
 
-        /* Fosforlu ve Canlı Kümeleme (Cluster) İkonları */
         .custom-cluster { background-color: rgba(46, 213, 115, 0.3); border-radius: 50%; border: 2px dashed var(--dark); }
         .custom-cluster div { 
             background-color: var(--success); color: var(--dark); 
@@ -108,11 +127,16 @@
 
         @media (max-width: 600px) {
             #report-btn { width: 80%; bottom: 25px; padding: 14px 20px; font-size: 16px; }
-            .leaflet-popup-content { width: 250px !important; }
+            #move-banner { font-size: 12px; padding: 12px 5px; }
         }
     </style>
 </head>
 <body>
+
+<a id="move-banner" href="https://mapedia.org/category/freetoilets">
+    <span>🚀 Mapedia.org'a taşındık! Yeni özellikleri keşfetmek için tıkla</span>
+    <span class="arrow">➜</span>
+</a>
 
 <div id="map"></div>
 
@@ -124,7 +148,6 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
-    // --- GÜVENLİK ZIRHI: XSS ENGELLEME (Asla dokunmuyoruz) ---
     function escapeHTML(str) {
         if (!str) return "";
         return String(str).replace(/[&<>"']/g, function(m) {
